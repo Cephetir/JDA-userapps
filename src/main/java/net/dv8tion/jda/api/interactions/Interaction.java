@@ -17,6 +17,7 @@
 package net.dv8tion.jda.api.interactions;
 
 import net.dv8tion.jda.api.JDA;
+import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -31,6 +32,7 @@ import net.dv8tion.jda.internal.utils.ChannelUtil;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Abstract representation for any kind of Discord interaction.
@@ -239,6 +241,28 @@ public interface Interaction extends ISnowflake
      */
     @Nonnull
     List<Entitlement> getEntitlements();
+
+    //TODO document, maybe not null
+    @Nullable
+    InteractionContextType getContext();
+
+    //TODO document
+    @Nonnull
+    Set<Permission> getUserPermissions();
+
+    //TODO document
+    @Nonnull
+    Set<Permission> getApplicationPermissions();
+
+    //TODO document, not the same as the caller id!
+    @Nonnull
+    UserSnowflake getUserIntegrationOwner();
+
+    //TODO document, false if absent
+    boolean hasGuildIntegrationOwner();
+
+    //TODO document, throw if absent, guild id in a guild, 0 in bot dms
+    long getGuildIntegrationOwner();
 
     /**
      * Returns the {@link net.dv8tion.jda.api.JDA JDA} instance of this interaction
