@@ -245,7 +245,7 @@ public interface Interaction extends ISnowflake
     @Nonnull
     List<Entitlement> getEntitlements();
 
-    //TODO document, maybe not null
+    //TODO document
     @Nullable
     InteractionContextType getContext();
 
