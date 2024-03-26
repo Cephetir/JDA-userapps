@@ -254,7 +254,7 @@ public interface Interaction extends ISnowflake
     Set<Permission> getApplicationPermissions();
 
     //TODO document
-    @Nonnull
+    @Nullable
     IntegrationOwners getIntegrationOwners();
 
     /**
