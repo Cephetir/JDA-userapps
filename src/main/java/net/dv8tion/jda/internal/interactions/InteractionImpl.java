@@ -48,8 +48,6 @@ import java.util.stream.Collectors;
 
 public class InteractionImpl implements Interaction
 {
-    private static final Logger LOGGER = LoggerFactory.getLogger(Interaction.class);
-
     protected final long id;
     protected final long channelId;
     protected final int type;
@@ -84,10 +82,7 @@ public class InteractionImpl implements Interaction
         else
             this.context = null;
         this.appPermissions = Collections.unmodifiableSet(Permission.getPermissions(data.getLong("app_permissions")));
-        if (data.hasKey("authorizing_integration_owners"))
-            this.integrationOwners = new IntegrationOwnersImpl(data.getObject("authorizing_integration_owners"));
-        else
-            this.integrationOwners = null;
+        this.integrationOwners = new IntegrationOwnersImpl(data.optObject("authorizing_integration_owners").orElseGet(DataObject::empty));
 
         DataObject channelJson = data.getObject("channel");
         if (guild != null)
@@ -200,7 +195,7 @@ public class InteractionImpl implements Interaction
         return userLocale;
     }
 
-    @Nullable
+    @Nonnull
     @Override
     public InteractionContextType getContext()
     {
