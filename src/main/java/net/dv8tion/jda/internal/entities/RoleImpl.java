@@ -19,7 +19,10 @@ package net.dv8tion.jda.internal.entities;
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.PermissionOverride;
+import net.dv8tion.jda.api.entities.Role;
+import net.dv8tion.jda.api.entities.RoleIcon;
 import net.dv8tion.jda.api.entities.channel.attribute.IPermissionContainer;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.exceptions.HierarchyException;
@@ -51,7 +54,7 @@ public class RoleImpl implements Role
 {
     private final long id;
     private final JDAImpl api;
-    private PartialGuild guild;
+    private Guild guild;
 
     private RoleTagsImpl tags;
     private String name;
@@ -64,7 +67,7 @@ public class RoleImpl implements Role
     private int frozenPosition = Integer.MIN_VALUE; // this is used exclusively for delete events
     private RoleIcon icon;
 
-    public RoleImpl(long id, PartialGuild guild)
+    public RoleImpl(long id, Guild guild)
     {
         this.id = id;
         this.api =(JDAImpl) guild.getJDA();
@@ -178,7 +181,7 @@ public class RoleImpl implements Role
     @Override
     public boolean hasPermission(@Nonnull Permission... permissions)
     {
-        long effectivePerms = rawPermissions | (hasGuild() ? getGuild().getPublicRole().getPermissionsRaw() : 0);
+        long effectivePerms = rawPermissions | getGuild().getPublicRole().getPermissionsRaw();
         for (Permission perm : permissions)
         {
             final long rawValue = perm.getRawValue();
@@ -272,21 +275,27 @@ public class RoleImpl implements Role
         return PermissionUtil.canInteract(this, role);
     }
 
-    @Nonnull
     @Override
-    public Guild getGuild()
+    public boolean hasFullGuild()
     {
-        return getPartialGuild().asGuild();
+        return true;
     }
 
     @Nonnull
     @Override
-    public PartialGuild getPartialGuild()
+    public Guild getGuild()
     {
         GuildImpl realGuild = (GuildImpl) api.getGuildById(guild.getIdLong());
         if (realGuild != null)
             guild = realGuild;
         return guild;
+    }
+
+    @Nonnull
+    @Override
+    public Long getGuildId()
+    {
+        return guild.getIdLong();
     }
 
     @Nonnull
@@ -449,11 +458,8 @@ public class RoleImpl implements Role
 
     public RoleImpl setRawPosition(int rawPosition)
     {
-        if (hasGuild())
-        {
-            SortedSnowflakeCacheViewImpl<Role> roleCache = (SortedSnowflakeCacheViewImpl<Role>) getGuild().getRoleCache();
-            roleCache.clearCachedLists();
-        }
+        SortedSnowflakeCacheViewImpl<Role> roleCache = (SortedSnowflakeCacheViewImpl<Role>) getGuild().getRoleCache();
+        roleCache.clearCachedLists();
         this.rawPosition = rawPosition;
         return this;
     }

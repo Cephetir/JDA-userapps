@@ -27,7 +27,7 @@ import net.dv8tion.jda.api.interactions.commands.ICommandReference;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandReference;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.PartialGuildImpl;
+import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.Helpers;
 import org.apache.commons.collections4.Bag;
@@ -35,6 +35,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.bag.HashBag;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
@@ -45,7 +46,8 @@ public abstract class AbstractMentions implements Mentions
 {
     protected final String content;
     protected final JDAImpl jda;
-    protected final PartialGuildImpl guild;
+    @Nullable protected final GuildImpl guild;
+    protected final boolean isFromGuild;
     protected final boolean mentionsEveryone;
 
     protected List<User> mentionedUsers;
@@ -55,11 +57,12 @@ public abstract class AbstractMentions implements Mentions
     protected List<CustomEmoji> mentionedEmojis;
     protected List<SlashCommandReference> mentionedSlashCommands;
 
-    public AbstractMentions(String content, JDAImpl jda, PartialGuildImpl guild, boolean mentionsEveryone)
+    public AbstractMentions(String content, JDAImpl jda, @Nullable GuildImpl guild, boolean isFromGuild, boolean mentionsEveryone)
     {
         this.content = content;
         this.jda = jda;
         this.guild = guild;
+        this.isFromGuild = isFromGuild;
         this.mentionsEveryone = mentionsEveryone;
     }
 
@@ -145,7 +148,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public synchronized List<Role> getRoles()
     {
-        if (guild == null)
+        if (!isFromGuild)
             return Collections.emptyList();
         if (mentionedRoles != null)
             return mentionedRoles;
@@ -156,7 +159,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public Bag<Role> getRolesBag()
     {
-        if (guild == null)
+        if (!isFromGuild)
             return new HashBag<>();
         return processMentions(Message.MentionType.ROLE, false, this::matchRole, toBag());
     }
@@ -181,7 +184,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public synchronized List<Member> getMembers()
     {
-        if (guild == null)
+        if (!isFromGuild)
             return Collections.emptyList();
         if (mentionedMembers != null)
             return mentionedMembers;
@@ -192,7 +195,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public Bag<Member> getMembersBag()
     {
-        if (guild == null)
+        if (!isFromGuild)
             return new HashBag<>();
         Bag<Member> bag = processMentions(Message.MentionType.USER, false, this::matchMember, toBag());
 
@@ -368,8 +371,8 @@ public abstract class AbstractMentions implements Mentions
         Member member = null;
         if (mentionable instanceof Member)
             member = (Member) mentionable;
-        else if (guild instanceof Guild && mentionable instanceof User)
-            member = ((Guild) guild).getMember((User) mentionable);
+        else if (guild != null && mentionable instanceof User)
+            member = guild.getMember((User) mentionable);
         return member != null && CollectionUtils.containsAny(getRoles(), member.getRoles());
     }
 

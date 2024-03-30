@@ -55,7 +55,7 @@ public abstract class ComponentInteractionImpl extends DeferrableInteractionImpl
         }
         else
         {
-            Guild guild = hasGuild() ? getGuild() : null;
+            Guild guild = getGuild();
             MessageChannel channel = getChannel();
             message = jda.getEntityBuilder().createMessageBestEffort(messageJson, channel, guild);
             // We assume that component interactions come from messages the bot sent

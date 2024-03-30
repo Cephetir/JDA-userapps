@@ -37,7 +37,7 @@ public class MessageContextInteractionImpl extends ContextInteractionImpl<Messag
         DataObject messages = resolved.getObject("messages");
         DataObject message = messages.getObject(messages.keys().iterator().next());
 
-        Guild guild = hasGuild() ? getGuild() : null;
+        Guild guild = getGuild();
         MessageChannel channel = getChannel();
 
         return api.getEntityBuilder().createMessageBestEffort(message, channel, guild);

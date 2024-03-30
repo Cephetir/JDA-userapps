@@ -50,7 +50,7 @@ public class MemberImpl implements Member
     private final Set<Role> roles = ConcurrentHashMap.newKeySet();
     private final GuildVoiceState voiceState;
 
-    private PartialGuildImpl guild;
+    private GuildImpl guild;
     private User user;
     private String nickname;
     private String avatarId;
@@ -61,14 +61,14 @@ public class MemberImpl implements Member
     // Permissions calculated by Discord
     @Nullable private MemberInteractionPermissions interactionPermissions;
 
-    public MemberImpl(PartialGuildImpl guild, User user)
+    public MemberImpl(GuildImpl guild, User user)
     {
         this.api = (JDAImpl) user.getJDA();
         this.guild = guild;
         this.user = user;
         this.joinDate = 0;
         boolean cacheState = api.isCacheFlagSet(CacheFlag.VOICE_STATE) || user.equals(api.getSelfUser());
-        this.voiceState = hasGuild() && cacheState ? new GuildVoiceStateImpl(this) : null;
+        this.voiceState = cacheState ? new GuildVoiceStateImpl(this) : null;
     }
 
     public MemberPresenceImpl getPresence()
@@ -89,21 +89,21 @@ public class MemberImpl implements Member
     }
 
     @Override
-    public boolean hasGuild()
+    public boolean hasFullGuild()
     {
-        return guild.isGuild();
+        return true;
+    }
+
+    @Nonnull
+    @Override
+    public Long getGuildId()
+    {
+        return guild.getIdLong();
     }
 
     @Nonnull
     @Override
     public GuildImpl getGuild()
-    {
-        return (GuildImpl) getPartialGuild().asGuild();
-    }
-
-    @Nonnull
-    @Override
-    public PartialGuild getPartialGuild()
     {
         GuildImpl realGuild = (GuildImpl) api.getGuildById(guild.getIdLong());
         if (realGuild != null)
@@ -124,7 +124,7 @@ public class MemberImpl implements Member
     {
         if (hasTimeJoined())
             return Helpers.toOffset(joinDate);
-        return getPartialGuild().getTimeCreated();
+        return getGuild().getTimeCreated();
     }
 
     @Override
@@ -267,7 +267,7 @@ public class MemberImpl implements Member
     public EnumSet<Permission> getPermissions(@Nonnull GuildChannel channel)
     {
         Checks.notNull(channel, "Channel");
-        if (!getPartialGuild().equals(channel.getPartialGuild()))
+        if (!getGuildId().equals(channel.getGuildId()))
             throw new IllegalArgumentException("Provided channel is not in the same guild as this member!");
 
         return Permission.getPermissions(PermissionUtil.getEffectivePermission(channel, this));
@@ -520,7 +520,7 @@ public class MemberImpl implements Member
         return new EntityString(this)
                 .setName(getEffectiveName())
                 .addMetadata("user", getUser())
-                .addMetadata("guild", getPartialGuild())
+                .addMetadata("guild", getGuild())
                 .toString();
     }
 }

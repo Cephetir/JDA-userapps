@@ -16,10 +16,8 @@
 
 package net.dv8tion.jda.internal.entities.channel.middleman;
 
-import net.dv8tion.jda.api.entities.PartialGuild;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.internal.entities.GuildImpl;
-import net.dv8tion.jda.internal.entities.PartialGuildImpl;
 import net.dv8tion.jda.internal.entities.channel.AbstractChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildChannelMixin;
 import net.dv8tion.jda.internal.utils.ChannelUtil;
@@ -28,32 +26,33 @@ import javax.annotation.Nonnull;
 
 public abstract class AbstractGuildChannelImpl<T extends AbstractGuildChannelImpl<T>> extends AbstractChannelImpl<T> implements GuildChannelMixin<T>
 {
-    protected PartialGuildImpl guild;
+    protected GuildImpl guild;
+    protected long guildId;
 
-    public AbstractGuildChannelImpl(long id, PartialGuildImpl guild)
+    public AbstractGuildChannelImpl(long id, GuildImpl guild)
     {
         super(id, guild.getJDA());
         this.guild = guild;
     }
 
     @Override
-    public boolean hasGuild()
+    public boolean hasFullGuild()
     {
-        return guild.isGuild();
+        return true;
     }
 
     @Nonnull
     @Override
     public GuildImpl getGuild()
     {
-        return (GuildImpl) guild.asGuild();
+        return guild;
     }
 
     @Nonnull
     @Override
-    public PartialGuild getPartialGuild()
+    public Long getGuildId()
     {
-        return guild;
+        return guildId;
     }
 
     @Override

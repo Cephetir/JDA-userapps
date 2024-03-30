@@ -18,7 +18,6 @@ package net.dv8tion.jda.internal.interactions;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -31,7 +30,10 @@ import net.dv8tion.jda.api.interactions.Interaction;
 import net.dv8tion.jda.api.interactions.InteractionContextType;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.*;
+import net.dv8tion.jda.internal.entities.GuildImpl;
+import net.dv8tion.jda.internal.entities.InteractionEntityBuilder;
+import net.dv8tion.jda.internal.entities.MemberImpl;
+import net.dv8tion.jda.internal.entities.UserImpl;
 import net.dv8tion.jda.internal.entities.channel.concrete.PrivateChannelImpl;
 
 import javax.annotation.Nonnull;
@@ -45,7 +47,8 @@ public class InteractionImpl implements Interaction
     protected final long channelId;
     protected final int type;
     protected final String token;
-    protected final PartialGuildImpl guild;
+    protected final long guildId;
+    protected final GuildImpl guild;
     protected final Member member;
     protected final User user;
     protected final Channel channel;
@@ -68,7 +71,8 @@ public class InteractionImpl implements Interaction
         this.id = data.getUnsignedLong("id");
         this.token = data.getString("token");
         this.type = data.getInt("type");
-        this.guild = getOrCreatePartialGuild(data);
+        this.guildId = data.getLong("guild_id", 0L);
+        this.guild = (GuildImpl) api.getGuildById(guildId);
         this.channelId = data.getUnsignedLong("channel_id", 0L);
         this.userLocale = DiscordLocale.from(data.getString("locale", "en-US"));
         // Absent in guild-scoped commands
@@ -80,28 +84,28 @@ public class InteractionImpl implements Interaction
         this.integrationOwners = new IntegrationOwnersImpl(data.optObject("authorizing_integration_owners").orElseGet(DataObject::empty));
 
         DataObject channelJson = data.getObject("channel");
-        if (guild instanceof GuildImpl)
+        if (guild != null)
         {
-            member = jda.getEntityBuilder().createMember((GuildImpl) guild, data.getObject("member"));
+            member = jda.getEntityBuilder().createMember(guild, data.getObject("member"));
             jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
             user = member.getUser();
 
-            GuildChannel channel = ((Guild) guild).getGuildChannelById(channelJson.getUnsignedLong("id"));
+            GuildChannel channel = guild.getGuildChannelById(channelJson.getUnsignedLong("id"));
             if (channel == null && ChannelType.fromId(channelJson.getInt("type")).isThread())
-                channel = api.getEntityBuilder().createThreadChannel((GuildImpl) guild, channelJson, guild.getIdLong(), false);
+                channel = api.getEntityBuilder().createThreadChannel(guild, channelJson, guild.getIdLong(), false);
             if (channel == null)
                 throw new IllegalStateException("Failed to create channel instance for interaction! Channel Type: " + channelJson.getInt("type"));
             this.channel = channel;
         }
-        else if (guild != null)
+        else if (guildId != 0)
         {
-            member = interactionEntityBuilder.createMember(guild, data.getObject("member"));
+            member = interactionEntityBuilder.createMember(guildId, data.getObject("member"));
             user = member.getUser();
 
             if (ChannelType.fromId(channelJson.getInt("type")).isThread())
-                channel = interactionEntityBuilder.createThreadChannel(guild, channelJson);
+                channel = interactionEntityBuilder.createThreadChannel(guildId, channelJson);
             else
-                channel = interactionEntityBuilder.createGuildChannel(guild, channelJson);
+                channel = interactionEntityBuilder.createGuildChannel(guildId, channelJson);
             if (channel == null)
                 throw new IllegalStateException("Failed to create channel instance for interaction! Channel Type: " + channelJson.getInt("type"));
         }
@@ -132,19 +136,6 @@ public class InteractionImpl implements Interaction
             }
             this.user = user;
         }
-    }
-
-    private PartialGuildImpl getOrCreatePartialGuild(DataObject data)
-    {
-        PartialGuildImpl partialGuild = null;
-        if (data.hasKey("guild_id"))
-        {
-            final long guildId = data.getUnsignedLong("guild_id");
-            partialGuild = (PartialGuildImpl) api.getGuildById(guildId);
-            if (partialGuild == null)
-                partialGuild = new PartialGuildImpl(api, guildId);
-        }
-        return partialGuild;
     }
 
     // Used to allow interaction hook to send messages after acknowledgements
@@ -186,15 +177,16 @@ public class InteractionImpl implements Interaction
 
     @Nullable
     @Override
-    public GuildImpl getGuild()
+    public Long getGuildId()
     {
-        if (guild == null) return null;
-        return (GuildImpl) guild.asGuild();
+        if (guildId == 0)
+            return null;
+        return guildId;
     }
 
     @Nullable
     @Override
-    public PartialGuildImpl getPartialGuild()
+    public GuildImpl getGuild()
     {
         return guild;
     }

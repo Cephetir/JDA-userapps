@@ -38,7 +38,7 @@ import net.dv8tion.jda.api.requests.restaction.pagination.ThreadMemberPagination
 import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.api.utils.cache.CacheView;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.PartialGuildImpl;
+import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
@@ -85,7 +85,7 @@ public class ThreadChannelImpl extends AbstractGuildChannelImpl<ThreadChannelImp
     private int slowmode;
     private int flags;
 
-    public ThreadChannelImpl(long id, PartialGuildImpl guild, ChannelType type)
+    public ThreadChannelImpl(long id, GuildImpl guild, ChannelType type)
     {
         super(id, guild);
         this.type = type;

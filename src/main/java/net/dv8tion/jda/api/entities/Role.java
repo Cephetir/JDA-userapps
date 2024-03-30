@@ -160,7 +160,7 @@ public interface Role extends IMentionable, IPermissionHolder, IPartialGuildHold
 
     @Nonnull
     @Override
-    PartialGuild getPartialGuild();
+    Long getGuildId();
 
     /**
      * Creates a new {@link net.dv8tion.jda.api.entities.Role Role} in the specified {@link net.dv8tion.jda.api.entities.Guild Guild}

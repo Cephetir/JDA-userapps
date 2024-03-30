@@ -32,6 +32,7 @@ import org.apache.commons.collections4.BagUtils;
 import org.apache.commons.collections4.bag.HashBag;
 
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -40,7 +41,8 @@ public class SelectMenuMentions implements Mentions
     private final DataObject resolved;
     private final JDAImpl jda;
     private final InteractionEntityBuilder interactionEntityBuilder;
-    private final PartialGuildImpl guild;
+    private final GuildImpl guild;
+    private final Long guildId;
     private final List<String> values;
 
     private List<User> cachedUsers;
@@ -48,11 +50,12 @@ public class SelectMenuMentions implements Mentions
     private List<Role> cachedRoles;
     private List<GuildChannel> cachedChannels;
 
-    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, PartialGuildImpl guild, DataObject resolved, DataArray values)
+    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, @Nullable GuildImpl guild, @Nullable Long guildId, DataObject resolved, DataArray values)
     {
         this.jda = jda;
         this.interactionEntityBuilder = interactionEntityBuilder;
         this.guild = guild;
+        this.guildId = guildId;
         this.resolved = resolved;
         this.values = values.stream(DataArray::getString).collect(Collectors.toList());
     }
@@ -98,6 +101,8 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<GuildChannel> getChannels()
     {
+        if (guildId == null)
+            return Collections.emptyList();
         if (cachedChannels != null)
             return cachedChannels;
 
@@ -109,14 +114,14 @@ public class SelectMenuMentions implements Mentions
                 .map(json ->
                 {
                     final ChannelType channelType = ChannelType.fromId(json.getInt("type", -1));
-                    if (guild.isGuild())
-                        return guild.asGuild().getGuildChannelById(channelType, json.getUnsignedLong("id"));
+                    if (guild != null)
+                        return guild.getGuildChannelById(channelType, json.getUnsignedLong("id"));
 
                     // Unknown guilds
                     if (channelType.isThread())
-                        return interactionEntityBuilder.createThreadChannel(guild, json);
+                        return interactionEntityBuilder.createThreadChannel(guildId, json);
                     // Will return null if the type isn't known
-                    return interactionEntityBuilder.createGuildChannel(guild, json);
+                    return interactionEntityBuilder.createGuildChannel(guildId, json);
                 })
                 .filter(Objects::nonNull)
                 .collect(Helpers.toUnmodifiableList());
@@ -150,6 +155,8 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<Role> getRoles()
     {
+        if (guildId == null)
+            return Collections.emptyList();
         if (cachedRoles != null)
             return cachedRoles;
 
@@ -160,9 +167,9 @@ public class SelectMenuMentions implements Mentions
                 .filter(Objects::nonNull)
                 .map(json ->
                 {
-                    if (guild.isGuild())
-                        return guild.asGuild().getRoleById(json.getUnsignedLong("id"));
-                    return interactionEntityBuilder.createRole(guild, json);
+                    if (guild != null)
+                        return guild.getRoleById(json.getUnsignedLong("id"));
+                    return interactionEntityBuilder.createRole(guildId, json);
                 })
                 .filter(Objects::nonNull)
                 .collect(Helpers.toUnmodifiableList());
@@ -207,6 +214,8 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<Member> getMembers()
     {
+        if (guildId == null)
+            return Collections.emptyList();
         if (cachedMembers != null)
             return cachedMembers;
 
@@ -217,12 +226,11 @@ public class SelectMenuMentions implements Mentions
                 .map(id -> memberMap.optObject(id).map(m -> m.put("id", id)).orElse(null))
                 .filter(Objects::nonNull)
                 .map(json -> json.put("user", userMap.getObject(json.getString("id"))))
-                .map(json -> interactionEntityBuilder.createMember(guild, json))
+                .map(json -> interactionEntityBuilder.createMember(guildId, json))
                 .filter(Objects::nonNull)
                 .filter(member ->
                 {
-                    if (member.hasGuild())
-                        jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
+                    jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
                     return true;
                 })
                 .collect(Helpers.toUnmodifiableList());

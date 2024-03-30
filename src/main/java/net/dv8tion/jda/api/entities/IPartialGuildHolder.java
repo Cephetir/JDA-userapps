@@ -22,24 +22,13 @@ import javax.annotation.Nullable;
 public interface IPartialGuildHolder
 {
     //TODO document
-    default boolean hasGuild()
-    {
-        final PartialGuild partialGuild = getPartialGuild();
-        if (partialGuild == null) return false;
-
-        return partialGuild.isGuild();
-    }
-
-    @Nullable
-    default Guild getGuild()
-    {
-        final PartialGuild partialGuild = getPartialGuild();
-        if (partialGuild == null) return null;
-
-        return partialGuild.asGuild();
-    }
+    boolean hasFullGuild();
 
     //TODO document
     @Nullable
-    PartialGuild getPartialGuild();
+    Long getGuildId();
+
+    //TODO document
+    @Nullable
+    Guild getGuild();
 }

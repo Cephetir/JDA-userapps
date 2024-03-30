@@ -26,15 +26,16 @@ import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.mentions.AbstractMentions;
 
+import javax.annotation.Nullable;
 import java.util.regex.Matcher;
 
 public class InteractionMentions extends AbstractMentions
 {
     protected final TLongObjectMap<Object> resolved;
 
-    public InteractionMentions(String content, TLongObjectMap<Object> resolved, JDAImpl jda, PartialGuildImpl guild)
+    public InteractionMentions(String content, TLongObjectMap<Object> resolved, JDAImpl jda, @Nullable GuildImpl guild, boolean isFromGuild)
     {
-        super(content, jda, guild, false);
+        super(content, jda, guild, isFromGuild, false);
         this.resolved = resolved;
     }
 

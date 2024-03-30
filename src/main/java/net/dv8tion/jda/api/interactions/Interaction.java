@@ -90,27 +90,36 @@ public interface Interaction extends ISnowflake, IPartialGuildHolder
 
     /**
      * The {@link Guild} this interaction happened in.
-     * <br>This is null in direct messages.
+     * <br>This is null in direct messages and unknown guilds.
      *
      * @return The {@link Guild} or null
+     *
+     * @see #getGuildId()
      */
-    //TODO documentation
     @Nullable
     Guild getGuild();
 
+    //TODO document
     @Nullable
     @Override
-    PartialGuild getPartialGuild();
+    Long getGuildId();
 
     /**
      * Whether this interaction came from a {@link Guild}.
-     * <br>This is identical to {@code getPartialGuild() != null}
+     * <br>This is identical to {@code getGuildId() != null}
      *
      * @return True, if this interaction happened in a guild
      */
     default boolean isFromGuild()
     {
-        return getPartialGuild() != null;
+        return getGuildId() != null;
+    }
+
+    //TODO document
+    @Override
+    default boolean hasFullGuild()
+    {
+        return getGuild() != null;
     }
 
     /**

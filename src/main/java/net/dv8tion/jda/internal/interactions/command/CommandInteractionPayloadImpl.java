@@ -87,7 +87,7 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
     private void parseOptions(DataArray options)
     {
         options.stream(DataArray::getObject)
-                .map(json -> new OptionMapping(json, resolved, getJDA(), getPartialGuild()))
+                .map(json -> new OptionMapping(json, resolved, getJDA(), getGuild(), isFromGuild()))
                 .forEach(this.options::add);
     }
 
@@ -111,7 +111,7 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
             })
         );
 
-        if (this.guild != null)
+        if (isFromGuild())
         {
             resolveJson.optObject("members").ifPresent(members ->
             {
@@ -120,8 +120,8 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                 {
                     DataObject memberJson = members.getObject(memberId);
                     memberJson.put("user", users.getObject(memberId)); // Add user json as well for parsing
-                    Member optionMember = interactionEntityBuilder.createMember(guild, memberJson);
-                    if (hasGuild())
+                    Member optionMember = interactionEntityBuilder.createMember(guildId, memberJson);
+                    if (hasFullGuild())
                         entityBuilder.updateMemberCache((MemberImpl) optionMember);
                     resolved.put(optionMember.getIdLong(), optionMember); // This basically upgrades user to member
                 });
@@ -132,9 +132,9 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                         .stream()
                         .map(roleId ->
                         {
-                            if (hasGuild())
-                                return guild.asGuild().getRoleById(roleId);
-                            return interactionEntityBuilder.createRole(guild, roles.getObject(roleId));
+                            if (hasFullGuild())
+                                return guild.getRoleById(roleId);
+                            return interactionEntityBuilder.createRole(guildId, roles.getObject(roleId));
                         })
                         .filter(Objects::nonNull)
                         .forEach(role -> resolved.put(role.getIdLong(), role));
@@ -146,12 +146,12 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                     if (channelObj != null)
                         resolved.put(channelObj.getIdLong(), channelObj);
                     else if (ChannelType.fromId(channelJson.getInt("type")).isThread())
-                        if (hasGuild())
+                        if (hasFullGuild())
                             resolved.put(Long.parseUnsignedLong(id), entityBuilder.createThreadChannel(getGuild(), channelJson, guild.getIdLong()));
                         else
-                            resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createThreadChannel(guild, channelJson));
+                            resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createThreadChannel(guildId, channelJson));
                     else
-                        resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createGuildChannel(guild, channelJson));
+                        resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createGuildChannel(guildId, channelJson));
                 })
             );
         }

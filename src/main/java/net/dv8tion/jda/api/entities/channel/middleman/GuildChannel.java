@@ -19,7 +19,6 @@ package net.dv8tion.jda.api.entities.channel.middleman;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.IPartialGuildHolder;
-import net.dv8tion.jda.api.entities.PartialGuild;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.attribute.IPermissionContainer;
@@ -51,11 +50,12 @@ public interface GuildChannel extends Channel, IPartialGuildHolder, Comparable<G
      */
     //TODO documentation
     @Nonnull
+    @Override
     Guild getGuild();
 
     @Nonnull
     @Override
-    PartialGuild getPartialGuild();
+    Long getGuildId();
 
     /**
      * Returns the {@link ChannelManager ChannelManager} for this GuildChannel.

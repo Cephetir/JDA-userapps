@@ -30,6 +30,7 @@ import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class PermissionUtil
@@ -278,7 +279,7 @@ public class PermissionUtil
         Checks.notNull(member, "Member");
         Checks.notNull(permissions, "Permissions");
 
-        checkGuild(channel.getPartialGuild(), member.getPartialGuild(), "Member");
+        checkGuild(channel, member, "Member");
 
         long effectivePerms = getEffectivePermission(channel, member);
         return isApplied(effectivePerms, Permission.getRaw(permissions));
@@ -306,7 +307,7 @@ public class PermissionUtil
     {
         Checks.notNull(member, "Member");
 
-        if (!member.hasGuild())
+        if (!member.hasFullGuild())
             throw new IllegalStateException("Cannot get the effective permissions of a member in an unknown guild without a channel. " +
                     "Use the overload with the interaction's channel instead.");
 
@@ -350,9 +351,9 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(member, "Member");
 
-        Checks.check(channel.getPartialGuild().equals(member.getPartialGuild()), "Provided channel and provided member are not of the same guild!");
+        Checks.check(channel.getGuildId().equals(member.getGuildId()), "Provided channel and provided member are not of the same guild!");
 
-        if (!member.hasGuild())
+        if (!member.hasFullGuild())
             return getInteractionPermissions(channel, member);
 
         IPermissionContainer permsChannel = channel.getPermissionContainer();
@@ -417,7 +418,7 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(role, "Role");
 
-        if (!channel.getPartialGuild().equals(role.getPartialGuild()))
+        if (!channel.getGuildId().equals(role.getGuildId()))
             throw new IllegalArgumentException("Provided channel and role are not of the same guild!");
 
         long permissions = getExplicitPermission(channel, role);
@@ -451,7 +452,7 @@ public class PermissionUtil
     {
         Checks.notNull(member, "Member");
 
-        if (!member.hasGuild())
+        if (!member.hasFullGuild())
             throw new IllegalStateException("Cannot get the explicit permissions of a member in an unknown guild without a channel. " +
                     "Use the overload with the interaction's channel instead.");
 
@@ -526,9 +527,9 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(member, "Member");
 
-        checkGuild(channel.getPartialGuild(), member.getPartialGuild(), "Member");
+        checkGuild(channel, member, "Member");
 
-        if (!member.hasGuild())
+        if (!member.hasFullGuild())
             return getInteractionPermissions(channel, member);
 
         long permission = includeRoles ? getExplicitPermission(member) : 0L;
@@ -616,13 +617,13 @@ public class PermissionUtil
         Checks.notNull(role, "Role");
 
         // Can't know exactly what the role's permissions in that channel are, since we don't have the overrides.
-        if (!role.hasGuild())
+        if (!role.hasFullGuild())
             throw new IllegalStateException("Cannot get the explicit permissions of a role in an unknown guild");
 
         IPermissionContainer permsChannel = channel.getPermissionContainer();
 
         final Guild guild = role.getGuild();
-        checkGuild(channel.getPartialGuild(), guild, "Role");
+        checkGuild(channel, role, "Role");
 
         long permission = includeRoles ? role.getPermissionsRaw() | guild.getPublicRole().getPermissionsRaw() : 0;
         PermissionOverride override = permsChannel.getPermissionOverride(guild.getPublicRole());
@@ -698,9 +699,9 @@ public class PermissionUtil
         return permission;
     }
 
-    private static void checkGuild(PartialGuild o1, PartialGuild o2, String name)
+    private static void checkGuild(IPartialGuildHolder o1, IPartialGuildHolder o2, String name)
     {
-        Checks.check(o1.equals(o2),
-            "Specified %s is not in the same guild! (%s / %s)", name, o1, o2);
+        Checks.check(Objects.equals(o1.getGuildId(), o2.getGuildId()),
+            "Specified %s is not in the same guild! (%s / %s)", name, o1.getGuildId(), o2.getGuildId());
     }
 }

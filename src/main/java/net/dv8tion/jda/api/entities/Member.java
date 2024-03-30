@@ -86,11 +86,12 @@ public interface Member extends IMentionable, IPermissionHolder, IPartialGuildHo
      */
     //TODO documentation
     @Nonnull
+    @Override
     Guild getGuild();
 
     @Nonnull
     @Override
-    PartialGuild getPartialGuild();
+    Long getGuildId();
 
     /**
      * The JDA instance.

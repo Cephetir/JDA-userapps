@@ -1488,8 +1488,7 @@ public class EntityBuilder extends AbstractEntityBuilder
         // Use channel directly if message is from a known guild channel
         if (channel instanceof GuildMessageChannel)
         {
-            final PartialGuild partialGuild = ((GuildMessageChannel) channel).getPartialGuild();
-            return createMessage0(json, channel, partialGuild.isGuild() ? (GuildImpl) partialGuild.asGuild() : null, modifyCache);
+            return createMessage0(json, channel, ((GuildMessageChannel) channel).hasFullGuild() ? (GuildImpl) ((GuildMessageChannel) channel).getGuild() : null, modifyCache);
         }
         // Try to resolve private channel recipient if needed
         if (channel instanceof PrivateChannel)
@@ -1544,7 +1543,10 @@ public class EntityBuilder extends AbstractEntityBuilder
         return channel;
     }
 
-    private ReceivedMessage createMessage0(DataObject jsonObject, @Nullable MessageChannel channel, @Nullable GuildImpl guild, boolean modifyCache)
+    private ReceivedMessage createMessage0(DataObject jsonObject,
+                                           @Nullable MessageChannel channel,
+                                           @Nullable GuildImpl guild,
+                                           boolean modifyCache)
     {
         MessageType type = MessageType.fromId(jsonObject.getInt("type"));
         if (type == MessageType.UNKNOWN)
@@ -1555,7 +1557,7 @@ public class EntityBuilder extends AbstractEntityBuilder
         final long authorId = author.getLong("id");
         final long channelId = jsonObject.getUnsignedLong("channel_id");
         final long guildId = channel instanceof GuildChannel
-                ? ((GuildChannel) channel).getPartialGuild().getIdLong()
+                ? ((GuildChannel) channel).getGuildId()
                 : jsonObject.getUnsignedLong("guild_id", 0L);
         MemberImpl member = null;
 
@@ -1692,7 +1694,7 @@ public class EntityBuilder extends AbstractEntityBuilder
 
         // Lazy Mention parsing and caching (includes reply mentions)
         Mentions mentions = new MessageMentionsImpl(
-            api, guild, content, mentionsEveryone,
+            api, guild, guildId != 0, content, mentionsEveryone,
             jsonObject.getArray("mentions"), jsonObject.getArray("mention_roles")
         );
 
