@@ -185,13 +185,6 @@ public class InteractionImpl implements Interaction
         return guild;
     }
 
-    public boolean hasFullGuild()
-    {
-        if (guild == null)
-            return false;
-        return !guild.isDetached();
-    }
-
     @Nullable
     @Override
     public Channel getChannel()
