@@ -214,12 +214,6 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
         return flags;
     }
 
-    @Override
-    public long getEffectivePermissionsRaw()
-    {
-        throw detachedException();
-    }
-
     @Nonnull
     @Override
     public EnumSet<Permission> getPermissions()

@@ -34,7 +34,6 @@ import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
 import net.dv8tion.jda.internal.entities.mixin.RoleMixin;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
-import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -46,7 +45,7 @@ public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDet
 {
     private final long id;
     private final JDAImpl api;
-    private DetachedGuildImpl guild;
+    private final DetachedGuildImpl guild;
 
     private RoleTagsImpl tags;
     private String name;
@@ -350,8 +349,6 @@ public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDet
     @Override
     public DetachedRoleImpl setRawPosition(int rawPosition)
     {
-        SortedSnowflakeCacheViewImpl<Role> roleCache = (SortedSnowflakeCacheViewImpl<Role>) getGuild().getRoleCache();
-        roleCache.clearCachedLists();
         this.rawPosition = rawPosition;
         return this;
     }

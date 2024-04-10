@@ -268,7 +268,7 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
     @Override
     public Guild getGuild()
     {
-        GuildImpl realGuild = (GuildImpl) api.getGuildById(guild.getIdLong());
+        Guild realGuild = api.getGuildById(guild.getIdLong());
         if (realGuild != null)
             guild = realGuild;
         return guild;

@@ -1703,7 +1703,7 @@ public class EntityBuilder extends AbstractEntityBuilder
 
         // Lazy Mention parsing and caching (includes reply mentions)
         Mentions mentions = new MessageMentionsImpl(
-            api, guild, guildId != 0, content, mentionsEveryone,
+            api, guild, content, mentionsEveryone,
             jsonObject.getArray("mentions"), jsonObject.getArray("mention_roles")
         );
 

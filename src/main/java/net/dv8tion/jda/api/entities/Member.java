@@ -96,9 +96,6 @@ public interface Member extends IMentionable, IPermissionHolder, IDetachableEnti
     @Nonnull
     JDA getJDA();
 
-    //TODO document
-    long getEffectivePermissionsRaw();
-
     /**
      * The {@link java.time.OffsetDateTime Time} this Member joined the Guild.
      * <br>If the member was loaded through a presence update (lazy loading) this will be identical

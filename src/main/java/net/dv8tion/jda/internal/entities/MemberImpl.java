@@ -76,7 +76,7 @@ public class MemberImpl implements Member, MemberMixin<MemberImpl>
 
     public MemberPresenceImpl getPresence()
     {
-        CacheView.SimpleCacheView<MemberPresenceImpl> presences = getGuild().getPresenceView();
+        CacheView.SimpleCacheView<MemberPresenceImpl> presences = guild.getPresenceView();
         return presences == null ? null : presences.get(getIdLong());
     }
 
@@ -237,12 +237,6 @@ public class MemberImpl implements Member, MemberMixin<MemberImpl>
     public int getFlagsRaw()
     {
         return flags;
-    }
-
-    @Override
-    public long getEffectivePermissionsRaw()
-    {
-        return PermissionUtil.getEffectivePermission(this);
     }
 
     @Nonnull

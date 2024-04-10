@@ -41,7 +41,7 @@ public class MessageMentionsImpl extends AbstractMentions
     private final TLongObjectMap<DataObject> userMentionMap;
     private final TLongSet roleMentionMap;
 
-    public MessageMentionsImpl(JDAImpl jda, GuildImpl guild, boolean isFromGuild, String content,
+    public MessageMentionsImpl(JDAImpl jda, GuildImpl guild, String content,
                                boolean mentionsEveryone, DataArray userMentions, DataArray roleMentions)
     {
         super(content, jda, guild, mentionsEveryone);

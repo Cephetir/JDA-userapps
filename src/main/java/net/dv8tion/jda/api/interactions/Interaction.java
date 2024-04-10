@@ -102,7 +102,7 @@ public interface Interaction extends ISnowflake
 
     /**
      * Whether this interaction came from a {@link Guild}.
-     * <br>This is identical to {@code getGuildId() != null}
+     * <br>This is identical to {@code getGuild() != null}
      *
      * @return True, if this interaction happened in a guild
      */
