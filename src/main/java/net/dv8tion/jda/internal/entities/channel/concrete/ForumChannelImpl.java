@@ -76,7 +76,7 @@ public class ForumChannelImpl extends AbstractGuildChannelImpl<ForumChannelImpl>
     @Override
     public GuildImpl getGuild()
     {
-        return ((GuildImpl) super.getGuild());
+        return (GuildImpl) super.getGuild();
     }
 
     @Nonnull

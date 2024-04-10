@@ -53,7 +53,7 @@ public class TextChannelImpl extends AbstractStandardGuildMessageChannelImpl<Tex
     @Override
     public GuildImpl getGuild()
     {
-        return ((GuildImpl) super.getGuild());
+        return (GuildImpl) super.getGuild();
     }
 
     @Nonnull

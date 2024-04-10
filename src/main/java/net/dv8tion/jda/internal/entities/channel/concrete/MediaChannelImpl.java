@@ -75,7 +75,7 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
     @Override
     public GuildImpl getGuild()
     {
-        return ((GuildImpl) super.getGuild());
+        return (GuildImpl) super.getGuild();
     }
 
     @Nonnull

@@ -68,7 +68,7 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     @Override
     public GuildImpl getGuild()
     {
-        return ((GuildImpl) super.getGuild());
+        return (GuildImpl) super.getGuild();
     }
 
     @Nonnull

@@ -57,7 +57,7 @@ public class CategoryImpl extends AbstractGuildChannelImpl<CategoryImpl> impleme
     @Override
     public GuildImpl getGuild()
     {
-        return ((GuildImpl) super.getGuild());
+        return (GuildImpl) super.getGuild();
     }
 
     @Nonnull
