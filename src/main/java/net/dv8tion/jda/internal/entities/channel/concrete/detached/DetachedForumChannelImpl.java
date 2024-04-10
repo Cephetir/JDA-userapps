@@ -30,8 +30,8 @@ import net.dv8tion.jda.api.managers.channel.concrete.ForumChannelManager;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.*;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.StandardGuildChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.ForumChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
@@ -46,12 +46,7 @@ public class DetachedForumChannelImpl extends AbstractGuildChannelImpl<DetachedF
     implements
         ForumChannel,
         GuildChannelUnion,
-        StandardGuildChannelMixin<DetachedForumChannelImpl>,
-        IAgeRestrictedChannelMixin<DetachedForumChannelImpl>,
-        ISlowmodeChannelMixin<DetachedForumChannelImpl>,
-        IWebhookContainerMixin<DetachedForumChannelImpl>,
-        IPostContainerMixin<DetachedForumChannelImpl>,
-        ITopicChannelMixin<DetachedForumChannelImpl>,
+        ForumChannelMixin<DetachedForumChannelImpl>,
         IInteractionPermissionMixin<DetachedForumChannelImpl>
 {
     private ChannelInteractionPermissions interactionPermissions;
@@ -222,18 +217,21 @@ public class DetachedForumChannelImpl extends AbstractGuildChannelImpl<DetachedF
         return this;
     }
 
+    @Override
     public DetachedForumChannelImpl setNSFW(boolean nsfw)
     {
         this.nsfw = nsfw;
         return this;
     }
 
+    @Override
     public DetachedForumChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
+    @Override
     public DetachedForumChannelImpl setTopic(String topic)
     {
         this.topic = topic;
@@ -266,6 +264,7 @@ public class DetachedForumChannelImpl extends AbstractGuildChannelImpl<DetachedF
         return this;
     }
 
+    @Override
     public DetachedForumChannelImpl setDefaultLayout(int layout)
     {
         this.defaultLayout = layout;

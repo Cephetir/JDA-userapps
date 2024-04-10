@@ -33,8 +33,7 @@ import net.dv8tion.jda.api.requests.restaction.pagination.ThreadMemberPagination
 import net.dv8tion.jda.api.utils.TimeUtil;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.ThreadChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.utils.Helpers;
@@ -48,8 +47,7 @@ import java.util.List;
 public class DetachedThreadChannelImpl extends AbstractGuildChannelImpl<DetachedThreadChannelImpl>
     implements
         ThreadChannel,
-        GuildMessageChannelMixin<DetachedThreadChannelImpl>,
-        ISlowmodeChannelMixin<DetachedThreadChannelImpl>,
+        ThreadChannelMixin<DetachedThreadChannelImpl>,
         IInteractionPermissionMixin<DetachedThreadChannelImpl>
 {
     private final ChannelType type;
@@ -307,72 +305,84 @@ public class DetachedThreadChannelImpl extends AbstractGuildChannelImpl<Detached
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setAutoArchiveDuration(AutoArchiveDuration autoArchiveDuration)
     {
         this.autoArchiveDuration = autoArchiveDuration;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setLocked(boolean locked)
     {
         this.locked = locked;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setArchived(boolean archived)
     {
         this.archived = archived;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setInvitable(boolean invitable)
     {
         this.invitable = invitable;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setArchiveTimestamp(long archiveTimestamp)
     {
         this.archiveTimestamp = archiveTimestamp;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setCreationTimestamp(long creationTimestamp)
     {
         this.creationTimestamp = creationTimestamp;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setOwnerId(long ownerId)
     {
         this.ownerId = ownerId;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setMessageCount(int messageCount)
     {
         this.messageCount = messageCount;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setTotalMessageCount(int messageCount)
     {
         this.totalMessageCount = Math.max(messageCount, this.messageCount); // If this is 0 we use the older count
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setMemberCount(int memberCount)
     {
         this.memberCount = memberCount;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
+    @Override
     public DetachedThreadChannelImpl setFlags(int flags)
     {
         this.flags = flags;

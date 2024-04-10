@@ -36,11 +36,7 @@ import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IWebhookContainerMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.AudioChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.StageChannelMixin;
 import net.dv8tion.jda.internal.managers.channel.concrete.StageChannelManagerImpl;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.requests.restaction.StageInstanceActionImpl;
@@ -56,11 +52,7 @@ import java.util.List;
 
 public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChannelImpl> implements
         StageChannel,
-        AudioChannelMixin<StageChannelImpl>,
-        GuildMessageChannelMixin<StageChannelImpl>,
-        IWebhookContainerMixin<StageChannelImpl>,
-        IAgeRestrictedChannelMixin<StageChannelImpl>,
-        ISlowmodeChannelMixin<StageChannelImpl>
+        StageChannelMixin<StageChannelImpl>
 {
     private final TLongObjectMap<Member> connectedMembers = MiscUtil.newLongMap();
 
@@ -267,6 +259,7 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
         return this;
     }
 
+    @Override
     public StageChannelImpl setStageInstance(StageInstance instance)
     {
         this.instance = instance;

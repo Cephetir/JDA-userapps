@@ -29,8 +29,7 @@ import net.dv8tion.jda.api.requests.restaction.order.CategoryOrderAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPermissionContainerMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPositionableChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.CategoryMixin;
 import net.dv8tion.jda.internal.managers.channel.concrete.CategoryManagerImpl;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
@@ -39,8 +38,7 @@ import javax.annotation.Nonnull;
 
 public class CategoryImpl extends AbstractGuildChannelImpl<CategoryImpl> implements
         Category,
-        IPositionableChannelMixin<CategoryImpl>,
-        IPermissionContainerMixin<CategoryImpl>
+        CategoryMixin<CategoryImpl>
 {
     private final TLongObjectMap<PermissionOverride> overrides = MiscUtil.newLongMap();
 

@@ -30,8 +30,8 @@ import net.dv8tion.jda.api.managers.channel.concrete.MediaChannelManager;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.*;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.StandardGuildChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.MediaChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
@@ -46,12 +46,7 @@ public class DetachedMediaChannelImpl extends AbstractGuildChannelImpl<DetachedM
     implements
         MediaChannel,
         GuildChannelUnion,
-        StandardGuildChannelMixin<DetachedMediaChannelImpl>,
-        IAgeRestrictedChannelMixin<DetachedMediaChannelImpl>,
-        ISlowmodeChannelMixin<DetachedMediaChannelImpl>,
-        IWebhookContainerMixin<DetachedMediaChannelImpl>,
-        IPostContainerMixin<DetachedMediaChannelImpl>,
-        ITopicChannelMixin<DetachedMediaChannelImpl>,
+        MediaChannelMixin<DetachedMediaChannelImpl>,
         IInteractionPermissionMixin<DetachedMediaChannelImpl>
 {
     private ChannelInteractionPermissions interactionPermissions;
@@ -230,12 +225,14 @@ public class DetachedMediaChannelImpl extends AbstractGuildChannelImpl<DetachedM
         return this;
     }
 
+    @Override
     public DetachedMediaChannelImpl setFlags(int flags)
     {
         this.flags = flags;
         return this;
     }
 
+    @Override
     public DetachedMediaChannelImpl setDefaultReaction(DataObject emoji)
     {
         if (emoji != null && !emoji.isNull("emoji_id"))
@@ -247,6 +244,7 @@ public class DetachedMediaChannelImpl extends AbstractGuildChannelImpl<DetachedM
         return this;
     }
 
+    @Override
     public DetachedMediaChannelImpl setDefaultSortOrder(int defaultSortOrder)
     {
         this.defaultSortOrder = defaultSortOrder;

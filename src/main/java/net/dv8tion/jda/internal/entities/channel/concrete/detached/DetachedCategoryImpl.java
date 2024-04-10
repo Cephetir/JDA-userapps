@@ -26,8 +26,7 @@ import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.requests.restaction.order.CategoryOrderAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPermissionContainerMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPositionableChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.CategoryMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 
@@ -36,8 +35,7 @@ import javax.annotation.Nonnull;
 public class DetachedCategoryImpl extends AbstractGuildChannelImpl<DetachedCategoryImpl>
     implements
         Category,
-        IPositionableChannelMixin<DetachedCategoryImpl>,
-        IPermissionContainerMixin<DetachedCategoryImpl>,
+        CategoryMixin<DetachedCategoryImpl>,
         IInteractionPermissionMixin<DetachedCategoryImpl>
 {
     private ChannelInteractionPermissions interactionPermissions;

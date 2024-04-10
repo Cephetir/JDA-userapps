@@ -24,8 +24,10 @@ import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataArray;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.channel.concrete.*;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPostContainerMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.*;
+import net.dv8tion.jda.internal.entities.mixin.MemberMixin;
+import net.dv8tion.jda.internal.entities.mixin.RoleMixin;
 import net.dv8tion.jda.internal.utils.Helpers;
 import net.dv8tion.jda.internal.utils.UnlockHook;
 import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
@@ -44,14 +46,14 @@ public abstract class AbstractEntityBuilder
         return api;
     }
 
-    protected void configureCategory(DataObject json, CategoryImpl channel)
+    protected void configureCategory(DataObject json, CategoryMixin<?> channel)
     {
         channel
                 .setName(json.getString("name"))
                 .setPosition(json.getInt("position"));
     }
 
-    protected void configureTextChannel(DataObject json, TextChannelImpl channel)
+    protected void configureTextChannel(DataObject json, TextChannelMixin<?> channel)
     {
         channel
                 .setParentCategory(json.getLong("parent_id", 0))
@@ -64,7 +66,7 @@ public abstract class AbstractEntityBuilder
                 .setSlowmode(json.getInt("rate_limit_per_user", 0));
     }
 
-    protected void configureNewsChannel(DataObject json, NewsChannelImpl channel)
+    protected void configureNewsChannel(DataObject json, NewsChannelMixin<?> channel)
     {
         channel
                 .setParentCategory(json.getLong("parent_id", 0))
@@ -75,7 +77,7 @@ public abstract class AbstractEntityBuilder
                 .setNSFW(json.getBoolean("nsfw"));
     }
 
-    protected void configureVoiceChannel(DataObject json, VoiceChannelImpl channel)
+    protected void configureVoiceChannel(DataObject json, VoiceChannelMixin<?> channel)
     {
         channel
                 .setParentCategory(json.getLong("parent_id", 0))
@@ -91,7 +93,7 @@ public abstract class AbstractEntityBuilder
                 .setSlowmode(json.getInt("rate_limit_per_user", 0));
     }
 
-    protected void configureStageChannel(DataObject json, StageChannelImpl channel)
+    protected void configureStageChannel(DataObject json, StageChannelMixin<?> channel)
     {
         channel
                 .setParentCategory(json.getLong("parent_id", 0))
@@ -106,7 +108,7 @@ public abstract class AbstractEntityBuilder
                 .setSlowmode(json.getInt("rate_limit_per_user", 0));
     }
 
-    protected void configureThreadChannel(DataObject json, ThreadChannelImpl channel)
+    protected void configureThreadChannel(DataObject json, ThreadChannelMixin<?> channel)
     {
         DataObject threadMetadata = json.getObject("thread_metadata");
 
@@ -127,7 +129,7 @@ public abstract class AbstractEntityBuilder
                 .setAutoArchiveDuration(ThreadChannel.AutoArchiveDuration.fromKey(threadMetadata.getInt("auto_archive_duration")));
     }
 
-    protected void configureForumChannel(DataObject json, ForumChannelImpl channel)
+    protected void configureForumChannel(DataObject json, ForumChannelMixin<?> channel)
     {
         if (api.isCacheFlagSet(CacheFlag.FORUM_TAGS))
         {
@@ -150,7 +152,7 @@ public abstract class AbstractEntityBuilder
                 .setNSFW(json.getBoolean("nsfw"));
     }
 
-    protected void configureMediaChannel(DataObject json, MediaChannelImpl channel)
+    protected void configureMediaChannel(DataObject json, MediaChannelMixin<?> channel)
     {
         if (api.isCacheFlagSet(CacheFlag.FORUM_TAGS))
         {
@@ -194,7 +196,7 @@ public abstract class AbstractEntityBuilder
         return tag;
     }
 
-    protected void configureMember(DataObject memberJson, MemberImpl member)
+    protected void configureMember(DataObject memberJson, MemberMixin<?> member)
     {
         member.setNickname(memberJson.getString("nick", null));
         member.setAvatarId(memberJson.getString("avatar", null));
@@ -218,7 +220,7 @@ public abstract class AbstractEntityBuilder
             member.setJoinDate(Helpers.toTimestamp(memberJson.getString("joined_at")));
     }
 
-    protected void configureRole(DataObject roleJson, RoleImpl role, long id)
+    protected void configureRole(DataObject roleJson, RoleMixin<?> role, long id)
     {
         final int color = roleJson.getInt("color");
         role.setName(roleJson.getString("name"))

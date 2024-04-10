@@ -32,12 +32,8 @@ import net.dv8tion.jda.api.requests.restaction.StageInstanceAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IWebhookContainerMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.AudioChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.StageChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.managers.channel.concrete.StageChannelManagerImpl;
@@ -56,11 +52,7 @@ import java.util.List;
 public class DetachedStageChannelImpl extends AbstractStandardGuildChannelImpl<DetachedStageChannelImpl>
     implements
         StageChannel,
-        AudioChannelMixin<DetachedStageChannelImpl>,
-        GuildMessageChannelMixin<DetachedStageChannelImpl>,
-        IWebhookContainerMixin<DetachedStageChannelImpl>,
-        IAgeRestrictedChannelMixin<DetachedStageChannelImpl>,
-        ISlowmodeChannelMixin<DetachedStageChannelImpl>,
+        StageChannelMixin<DetachedStageChannelImpl>,
         IInteractionPermissionMixin<DetachedStageChannelImpl>
 {
     private final TLongObjectMap<Member> connectedMembers = MiscUtil.newLongMap();
@@ -248,6 +240,7 @@ public class DetachedStageChannelImpl extends AbstractStandardGuildChannelImpl<D
         return this;
     }
 
+    @Override
     public DetachedStageChannelImpl setStageInstance(StageInstance instance)
     {
         this.instance = instance;

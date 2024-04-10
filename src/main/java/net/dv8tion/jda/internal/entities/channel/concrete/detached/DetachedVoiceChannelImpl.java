@@ -26,12 +26,8 @@ import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IWebhookContainerMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.AudioChannelMixin;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.VoiceChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -43,11 +39,7 @@ import java.util.List;
 public class DetachedVoiceChannelImpl extends AbstractStandardGuildChannelImpl<DetachedVoiceChannelImpl>
     implements
         VoiceChannel,
-        GuildMessageChannelMixin<DetachedVoiceChannelImpl>,
-        AudioChannelMixin<DetachedVoiceChannelImpl>,
-        IWebhookContainerMixin<DetachedVoiceChannelImpl>,
-        IAgeRestrictedChannelMixin<DetachedVoiceChannelImpl>,
-        ISlowmodeChannelMixin<DetachedVoiceChannelImpl>,
+        VoiceChannelMixin<DetachedVoiceChannelImpl>,
         IInteractionPermissionMixin<DetachedVoiceChannelImpl>
 {
     private ChannelInteractionPermissions interactionPermissions;
@@ -213,6 +205,7 @@ public class DetachedVoiceChannelImpl extends AbstractStandardGuildChannelImpl<D
         return this;
     }
 
+    @Override
     public DetachedVoiceChannelImpl setStatus(String status)
     {
         this.status = status;

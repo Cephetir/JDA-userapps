@@ -27,6 +27,7 @@ import net.dv8tion.jda.api.requests.RestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildMessageChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.NewsChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 
@@ -37,6 +38,7 @@ public class DetachedNewsChannelImpl extends AbstractStandardGuildMessageChannel
     implements
         NewsChannel,
         DefaultGuildChannelUnion,
+        NewsChannelMixin<DetachedNewsChannelImpl>,
         IInteractionPermissionMixin<DetachedNewsChannelImpl>
 {
     private ChannelInteractionPermissions interactionPermissions;

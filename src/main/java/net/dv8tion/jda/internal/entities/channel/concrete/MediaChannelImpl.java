@@ -35,8 +35,7 @@ import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.*;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.StandardGuildChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.MediaChannelMixin;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
 import net.dv8tion.jda.internal.managers.channel.concrete.MediaChannelManagerImpl;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -51,12 +50,7 @@ import java.util.List;
 public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
     implements MediaChannel,
         GuildChannelUnion,
-        StandardGuildChannelMixin<MediaChannelImpl>,
-        IAgeRestrictedChannelMixin<MediaChannelImpl>,
-        ISlowmodeChannelMixin<MediaChannelImpl>,
-        IWebhookContainerMixin<MediaChannelImpl>,
-        IPostContainerMixin<MediaChannelImpl>,
-        ITopicChannelMixin<MediaChannelImpl>
+        MediaChannelMixin<MediaChannelImpl>
 {
     private final TLongObjectMap<PermissionOverride> overrides = MiscUtil.newLongMap();
     private final SortedSnowflakeCacheViewImpl<ForumTag> tagCache = new SortedSnowflakeCacheViewImpl<>(ForumTag.class, ForumTag::getName, Comparator.naturalOrder());
@@ -260,12 +254,14 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
         return this;
     }
 
+    @Override
     public MediaChannelImpl setFlags(int flags)
     {
         this.flags = flags;
         return this;
     }
 
+    @Override
     public MediaChannelImpl setDefaultReaction(DataObject emoji)
     {
         if (emoji != null && !emoji.isNull("emoji_id"))
@@ -277,6 +273,7 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
         return this;
     }
 
+    @Override
     public MediaChannelImpl setDefaultSortOrder(int defaultSortOrder)
     {
         this.defaultSortOrder = defaultSortOrder;

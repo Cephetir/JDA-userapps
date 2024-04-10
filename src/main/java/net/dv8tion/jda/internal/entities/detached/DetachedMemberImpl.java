@@ -26,6 +26,7 @@ import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
+import net.dv8tion.jda.internal.entities.mixin.MemberMixin;
 import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
@@ -40,7 +41,7 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
 
-public class DetachedMemberImpl implements Member, IDetachableEntityMixin
+public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImpl>, IDetachableEntityMixin
 {
     private final JDAImpl api;
 
@@ -370,42 +371,49 @@ public class DetachedMemberImpl implements Member, IDetachableEntityMixin
         return interactionPermissions;
     }
 
+    @Override
     public DetachedMemberImpl setNickname(String nickname)
     {
         this.nickname = nickname;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setAvatarId(String avatarId)
     {
         this.avatarId = avatarId;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setJoinDate(long joinDate)
     {
         this.joinDate = joinDate;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setBoostDate(long boostDate)
     {
         this.boostDate = boostDate;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setTimeOutEnd(long time)
     {
         this.timeOutEnd = time;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setPending(boolean pending)
     {
         this.pending = pending;
         return this;
     }
 
+    @Override
     public DetachedMemberImpl setFlags(int flags)
     {
         this.flags = flags;

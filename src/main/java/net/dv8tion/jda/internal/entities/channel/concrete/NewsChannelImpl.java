@@ -32,6 +32,7 @@ import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildMessageChannelImpl;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.NewsChannelMixin;
 import net.dv8tion.jda.internal.managers.channel.concrete.NewsChannelManagerImpl;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -42,7 +43,8 @@ import java.util.List;
 
 public class NewsChannelImpl extends AbstractStandardGuildMessageChannelImpl<NewsChannelImpl>
         implements NewsChannel,
-        DefaultGuildChannelUnion
+        DefaultGuildChannelUnion,
+        NewsChannelMixin<NewsChannelImpl>
 {
     public NewsChannelImpl(long id, GuildImpl guild)
     {

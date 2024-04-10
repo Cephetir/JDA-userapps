@@ -35,8 +35,7 @@ import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.*;
-import net.dv8tion.jda.internal.entities.channel.mixin.middleman.StandardGuildChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.concrete.ForumChannelMixin;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
 import net.dv8tion.jda.internal.managers.channel.concrete.ForumChannelManagerImpl;
 import net.dv8tion.jda.internal.utils.Checks;
@@ -49,14 +48,9 @@ import java.util.EnumSet;
 import java.util.List;
 
 public class ForumChannelImpl extends AbstractGuildChannelImpl<ForumChannelImpl>
-        implements ForumChannel,
-                   GuildChannelUnion,
-        StandardGuildChannelMixin<ForumChannelImpl>,
-                   IAgeRestrictedChannelMixin<ForumChannelImpl>,
-                   ISlowmodeChannelMixin<ForumChannelImpl>,
-                   IWebhookContainerMixin<ForumChannelImpl>,
-                   IPostContainerMixin<ForumChannelImpl>,
-                   ITopicChannelMixin<ForumChannelImpl>
+    implements ForumChannel,
+        GuildChannelUnion,
+        ForumChannelMixin<ForumChannelImpl>
 {
     private final TLongObjectMap<PermissionOverride> overrides = MiscUtil.newLongMap();
     private final SortedSnowflakeCacheViewImpl<ForumTag> tagCache = new SortedSnowflakeCacheViewImpl<>(ForumTag.class, ForumTag::getName, Comparator.naturalOrder());
@@ -253,18 +247,21 @@ public class ForumChannelImpl extends AbstractGuildChannelImpl<ForumChannelImpl>
         return this;
     }
 
+    @Override
     public ForumChannelImpl setNSFW(boolean nsfw)
     {
         this.nsfw = nsfw;
         return this;
     }
 
+    @Override
     public ForumChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
+    @Override
     public ForumChannelImpl setTopic(String topic)
     {
         this.topic = topic;
@@ -297,6 +294,7 @@ public class ForumChannelImpl extends AbstractGuildChannelImpl<ForumChannelImpl>
         return this;
     }
 
+    @Override
     public ForumChannelImpl setDefaultLayout(int layout)
     {
         this.defaultLayout = layout;

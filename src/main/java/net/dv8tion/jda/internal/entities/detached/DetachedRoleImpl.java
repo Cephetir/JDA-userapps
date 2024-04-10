@@ -32,6 +32,7 @@ import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.RoleImpl.RoleTagsImpl;
 import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
+import net.dv8tion.jda.internal.entities.mixin.RoleMixin;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
@@ -44,7 +45,7 @@ import java.time.OffsetDateTime;
 import java.util.Collection;
 import java.util.EnumSet;
 
-public class DetachedRoleImpl implements Role, IDetachableEntityMixin
+public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDetachableEntityMixin
 {
     private final long id;
     private final JDAImpl api;
@@ -342,42 +343,49 @@ public class DetachedRoleImpl implements Role, IDetachableEntityMixin
 
     // -- Setters --
 
+    @Override
     public DetachedRoleImpl setName(String name)
     {
         this.name = name;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setColor(int color)
     {
         this.color = color;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setManaged(boolean managed)
     {
         this.managed = managed;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setHoisted(boolean hoisted)
     {
         this.hoisted = hoisted;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setMentionable(boolean mentionable)
     {
         this.mentionable = mentionable;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setRawPermissions(long rawPermissions)
     {
         this.rawPermissions = rawPermissions;
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setRawPosition(int rawPosition)
     {
         SortedSnowflakeCacheViewImpl<Role> roleCache = (SortedSnowflakeCacheViewImpl<Role>) getGuild().getRoleCache();
@@ -386,6 +394,7 @@ public class DetachedRoleImpl implements Role, IDetachableEntityMixin
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setTags(DataObject tags)
     {
         if (this.tags == null)
@@ -394,6 +403,7 @@ public class DetachedRoleImpl implements Role, IDetachableEntityMixin
         return this;
     }
 
+    @Override
     public DetachedRoleImpl setIcon(RoleIcon icon)
     {
         this.icon = icon;
