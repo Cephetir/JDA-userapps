@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.internal.entities.channel.mixin.concrete;
 
-import net.dv8tion.jda.api.entities.StageInstance;
 import net.dv8tion.jda.api.entities.channel.concrete.StageChannel;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
@@ -32,5 +31,5 @@ public interface StageChannelMixin<T extends StageChannelMixin<T>>
         IAgeRestrictedChannelMixin<T>,
         ISlowmodeChannelMixin<T>
 {
-    T setStageInstance(StageInstance instance);
+
 }

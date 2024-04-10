@@ -259,7 +259,6 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
         return this;
     }
 
-    @Override
     public StageChannelImpl setStageInstance(StageInstance instance)
     {
         this.instance = instance;
