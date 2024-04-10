@@ -264,12 +264,6 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
         return PermissionUtil.canInteract(this, role);
     }
 
-    @Override
-    public boolean hasFullGuild()
-    {
-        return true;
-    }
-
     @Nonnull
     @Override
     public Guild getGuild()
@@ -278,13 +272,6 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
         if (realGuild != null)
             guild = realGuild;
         return guild;
-    }
-
-    @Nonnull
-    @Override
-    public Long getGuildId()
-    {
-        return guild.getIdLong();
     }
 
     @Nonnull

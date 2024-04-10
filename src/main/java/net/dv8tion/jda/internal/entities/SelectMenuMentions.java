@@ -42,7 +42,6 @@ public class SelectMenuMentions implements Mentions
     private final JDAImpl jda;
     private final InteractionEntityBuilder interactionEntityBuilder;
     private final Guild guild;
-    private final Long guildId;
     private final List<String> values;
 
     private List<User> cachedUsers;
@@ -50,12 +49,11 @@ public class SelectMenuMentions implements Mentions
     private List<Role> cachedRoles;
     private List<GuildChannel> cachedChannels;
 
-    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, @Nullable Guild guild, @Nullable Long guildId, DataObject resolved, DataArray values)
+    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, @Nullable Guild guild, DataObject resolved, DataArray values)
     {
         this.jda = jda;
         this.interactionEntityBuilder = interactionEntityBuilder;
         this.guild = guild;
-        this.guildId = guildId;
         this.resolved = resolved;
         this.values = values.stream(DataArray::getString).collect(Collectors.toList());
     }
@@ -101,7 +99,7 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<GuildChannel> getChannels()
     {
-        if (guildId == null)
+        if (guild == null)
             return Collections.emptyList();
         if (cachedChannels != null)
             return cachedChannels;
@@ -155,7 +153,7 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<Role> getRoles()
     {
-        if (guildId == null)
+        if (guild == null)
             return Collections.emptyList();
         if (cachedRoles != null)
             return cachedRoles;
@@ -214,7 +212,7 @@ public class SelectMenuMentions implements Mentions
     @Override
     public List<Member> getMembers()
     {
-        if (guildId == null)
+        if (guild == null)
             return Collections.emptyList();
         if (cachedMembers != null)
             return cachedMembers;

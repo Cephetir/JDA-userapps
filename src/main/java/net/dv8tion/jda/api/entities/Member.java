@@ -65,7 +65,7 @@ import java.util.concurrent.TimeUnit;
  * @see   Guild#getMembersWithRoles(Role...)
  * @see   Guild#getMembers()
  */
-public interface Member extends IMentionable, IPermissionHolder, IPartialGuildHolder, IDetachableEntity, UserSnowflake
+public interface Member extends IMentionable, IPermissionHolder, IDetachableEntity, UserSnowflake
 {
     /** Template for {@link #getAvatarUrl()}. */
     String AVATAR_URL = "https://cdn.discordapp.com/guilds/%s/users/%s/avatars/%s.%s";
@@ -85,14 +85,8 @@ public interface Member extends IMentionable, IPermissionHolder, IPartialGuildHo
      *
      * @return {@link net.dv8tion.jda.api.entities.Guild Guild}
      */
-    //TODO documentation
     @Nonnull
-    @Override
     Guild getGuild();
-
-    @Nonnull
-    @Override
-    Long getGuildId();
 
     /**
      * The JDA instance.

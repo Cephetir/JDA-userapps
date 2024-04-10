@@ -199,24 +199,11 @@ public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDet
         return PermissionUtil.canInteract(this, role);
     }
 
-    @Override
-    public boolean hasFullGuild()
-    {
-        return false;
-    }
-
     @Nonnull
     @Override
     public Guild getGuild()
     {
         return guild;
-    }
-
-    @Nonnull
-    @Override
-    public Long getGuildId()
-    {
-        return guild.getIdLong();
     }
 
     @Nonnull

@@ -180,18 +180,16 @@ public class InteractionImpl implements Interaction
 
     @Nullable
     @Override
-    public Long getGuildId()
-    {
-        if (guildId == 0)
-            return null;
-        return guildId;
-    }
-
-    @Nullable
-    @Override
     public Guild getGuild()
     {
         return guild;
+    }
+
+    public boolean hasFullGuild()
+    {
+        if (guild == null)
+            return false;
+        return !guild.isDetached();
     }
 
     @Nullable

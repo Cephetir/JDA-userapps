@@ -80,19 +80,6 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
         return user;
     }
 
-    @Override
-    public boolean hasFullGuild()
-    {
-        return true;
-    }
-
-    @Nonnull
-    @Override
-    public Long getGuildId()
-    {
-        return guild.getIdLong();
-    }
-
     @Nonnull
     @Override
     public Guild getGuild()

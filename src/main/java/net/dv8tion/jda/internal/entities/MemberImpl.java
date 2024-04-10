@@ -91,19 +91,6 @@ public class MemberImpl implements Member, MemberMixin<MemberImpl>
         return user;
     }
 
-    @Override
-    public boolean hasFullGuild()
-    {
-        return true;
-    }
-
-    @Nonnull
-    @Override
-    public Long getGuildId()
-    {
-        return guild.getIdLong();
-    }
-
     @Nonnull
     @Override
     public GuildImpl getGuild()
@@ -270,7 +257,7 @@ public class MemberImpl implements Member, MemberMixin<MemberImpl>
     public EnumSet<Permission> getPermissions(@Nonnull GuildChannel channel)
     {
         Checks.notNull(channel, "Channel");
-        if (!getGuildId().equals(channel.getGuildId()))
+        if (!getGuild().equals(channel.getGuild()))
             throw new IllegalArgumentException("Provided channel is not in the same guild as this member!");
 
         return Permission.getPermissions(PermissionUtil.getEffectivePermission(channel, this));

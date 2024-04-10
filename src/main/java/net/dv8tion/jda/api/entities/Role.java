@@ -40,7 +40,7 @@ import java.awt.*;
  * @see JDA#getRolesByName(String, boolean)
  * @see JDA#getRoles()
  */
-public interface Role extends IMentionable, IPermissionHolder, IPartialGuildHolder, IDetachableEntity, Comparable<Role>
+public interface Role extends IMentionable, IPermissionHolder, IDetachableEntity, Comparable<Role>
 {
     /** Used to keep consistency between color values used in the API */
     int DEFAULT_COLOR_RAW = 0x1FFFFFFF; // java.awt.Color fills the MSB with FF, we just use 1F to provide better consistency
@@ -155,13 +155,8 @@ public interface Role extends IMentionable, IPermissionHolder, IPartialGuildHold
      *
      * @return the Guild containing this Role
      */
-    //TODO documentation
     @Nonnull
     Guild getGuild();
-
-    @Nonnull
-    @Override
-    Long getGuildId();
 
     /**
      * Creates a new {@link net.dv8tion.jda.api.entities.Role Role} in the specified {@link net.dv8tion.jda.api.entities.Guild Guild}

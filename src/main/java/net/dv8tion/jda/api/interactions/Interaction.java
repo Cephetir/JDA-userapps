@@ -18,7 +18,10 @@ package net.dv8tion.jda.api.interactions;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.*;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.ISnowflake;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -59,7 +62,7 @@ import java.util.Set;
  * <p><b>You can only acknowledge an interaction once!</b> Any additional calls to reply/deferReply will result in exceptions.
  * You can use {@link #isAcknowledged()} to check whether the interaction has been acknowledged already.
  */
-public interface Interaction extends ISnowflake, IPartialGuildHolder
+public interface Interaction extends ISnowflake
 {
     /**
      * The raw interaction type.
@@ -90,19 +93,12 @@ public interface Interaction extends ISnowflake, IPartialGuildHolder
 
     /**
      * The {@link Guild} this interaction happened in.
-     * <br>This is null in direct messages and unknown guilds.
+     * <br>This is null in direct messages.
      *
      * @return The {@link Guild} or null
-     *
-     * @see #getGuildId()
      */
     @Nullable
     Guild getGuild();
-
-    //TODO document
-    @Nullable
-    @Override
-    Long getGuildId();
 
     /**
      * Whether this interaction came from a {@link Guild}.
@@ -112,16 +108,7 @@ public interface Interaction extends ISnowflake, IPartialGuildHolder
      */
     default boolean isFromGuild()
     {
-        return getGuildId() != null;
-    }
-
-    //TODO document
-    @Override
-    default boolean hasFullGuild()
-    {
-        final Guild guild = getGuild();
-        if (guild == null) return false;
-        return !guild.isDetached();
+        return getGuild() != null;
     }
 
     /**

@@ -39,7 +39,6 @@ public class EntitySelectInteractionImpl extends SelectMenuInteractionImpl<IMent
         this.mentions = new SelectMenuMentions(
                 jda, interactionEntityBuilder,
                 getGuild(),
-                getGuildId(),
                 content.optObject("resolved").orElseGet(DataObject::empty),
                 content.optArray("values").orElseGet(DataArray::empty)
         );

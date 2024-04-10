@@ -79,13 +79,6 @@ public class GenericInteractionCreateEvent extends Event implements Interaction
 
     @Nullable
     @Override
-    public Long getGuildId()
-    {
-        return interaction.getGuildId();
-    }
-
-    @Nullable
-    @Override
     public Guild getGuild()
     {
         return interaction.getGuild();

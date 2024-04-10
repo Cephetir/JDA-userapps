@@ -279,7 +279,7 @@ public class PermissionUtil
         Checks.notNull(member, "Member");
         Checks.notNull(permissions, "Permissions");
 
-        checkGuild(channel, member, "Member");
+        checkGuild(channel.getGuild(), member.getGuild(), "Member");
 
         long effectivePerms = getEffectivePermission(channel, member);
         return isApplied(effectivePerms, Permission.getRaw(permissions));
@@ -307,7 +307,7 @@ public class PermissionUtil
     {
         Checks.notNull(member, "Member");
 
-        if (!member.hasFullGuild())
+        if (member.isDetached())
             throw new IllegalStateException("Cannot get the effective permissions of a member in an unknown guild without a channel. " +
                     "Use the overload with the interaction's channel instead.");
 
@@ -351,9 +351,9 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(member, "Member");
 
-        Checks.check(channel.getGuildId().equals(member.getGuildId()), "Provided channel and provided member are not of the same guild!");
+        Checks.check(channel.getGuild().equals(member.getGuild()), "Provided channel and provided member are not of the same guild!");
 
-        if (!member.hasFullGuild())
+        if (member.isDetached())
             return getInteractionPermissions(channel, member);
 
         IPermissionContainer permsChannel = channel.getPermissionContainer();
@@ -418,7 +418,7 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(role, "Role");
 
-        if (!channel.getGuildId().equals(role.getGuildId()))
+        if (!channel.getGuild().equals(role.getGuild()))
             throw new IllegalArgumentException("Provided channel and role are not of the same guild!");
 
         long permissions = getExplicitPermission(channel, role);
@@ -452,7 +452,7 @@ public class PermissionUtil
     {
         Checks.notNull(member, "Member");
 
-        if (!member.hasFullGuild())
+        if (member.isDetached())
             throw new IllegalStateException("Cannot get the explicit permissions of a member in an unknown guild without a channel. " +
                     "Use the overload with the interaction's channel instead.");
 
@@ -527,9 +527,9 @@ public class PermissionUtil
         Checks.notNull(channel, "Channel");
         Checks.notNull(member, "Member");
 
-        checkGuild(channel, member, "Member");
+        checkGuild(channel.getGuild(), member.getGuild(), "Member");
 
-        if (!member.hasFullGuild())
+        if (member.isDetached())
             return getInteractionPermissions(channel, member);
 
         long permission = includeRoles ? getExplicitPermission(member) : 0L;
@@ -617,13 +617,13 @@ public class PermissionUtil
         Checks.notNull(role, "Role");
 
         // Can't know exactly what the role's permissions in that channel are, since we don't have the overrides.
-        if (!role.hasFullGuild())
+        if (role.isDetached())
             throw new IllegalStateException("Cannot get the explicit permissions of a role in an unknown guild");
 
         IPermissionContainer permsChannel = channel.getPermissionContainer();
 
         final Guild guild = role.getGuild();
-        checkGuild(channel, role, "Role");
+        checkGuild(channel.getGuild(), role.getGuild(), "Role");
 
         long permission = includeRoles ? role.getPermissionsRaw() | guild.getPublicRole().getPermissionsRaw() : 0;
         PermissionOverride override = permsChannel.getPermissionOverride(guild.getPublicRole());
@@ -699,9 +699,9 @@ public class PermissionUtil
         return permission;
     }
 
-    private static void checkGuild(IPartialGuildHolder o1, IPartialGuildHolder o2, String name)
+    private static void checkGuild(Guild o1, Guild o2, String name)
     {
-        Checks.check(Objects.equals(o1.getGuildId(), o2.getGuildId()),
-            "Specified %s is not in the same guild! (%s / %s)", name, o1.getGuildId(), o2.getGuildId());
+        Checks.check(Objects.equals(o1, o2),
+            "Specified %s is not in the same guild! (%s / %s)", name, o1, o2);
     }
 }
