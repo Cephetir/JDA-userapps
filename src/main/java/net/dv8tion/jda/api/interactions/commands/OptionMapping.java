@@ -51,16 +51,16 @@ public class OptionMapping
     private final TLongObjectMap<Object> resolved;
     private final Mentions mentions;
 
-    public OptionMapping(DataObject data, TLongObjectMap<Object> resolved, JDA jda, Guild guild, boolean isFromGuild)
+    public OptionMapping(DataObject data, TLongObjectMap<Object> resolved, JDA jda, Guild guild)
     {
         this.data = data;
         this.type = OptionType.fromKey(data.getInt("type", -1));
         this.name = data.getString("name");
         this.resolved = resolved;
         if (type == OptionType.STRING)
-            mentions = new InteractionMentions(getAsString(), resolved, (JDAImpl) jda, guild, isFromGuild);
+            mentions = new InteractionMentions(getAsString(), resolved, (JDAImpl) jda, guild);
         else
-            mentions = new InteractionMentions("", new TLongObjectHashMap<>(0), (JDAImpl) jda, guild, isFromGuild);
+            mentions = new InteractionMentions("", new TLongObjectHashMap<>(0), (JDAImpl) jda, guild);
     }
 
     /**

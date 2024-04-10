@@ -44,7 +44,7 @@ public class MessageMentionsImpl extends AbstractMentions
     public MessageMentionsImpl(JDAImpl jda, GuildImpl guild, boolean isFromGuild, String content,
                                boolean mentionsEveryone, DataArray userMentions, DataArray roleMentions)
     {
-        super(content, jda, guild, isFromGuild, mentionsEveryone);
+        super(content, jda, guild, mentionsEveryone);
         this.userMentionMap = new TLongObjectHashMap<>(userMentions.length());
         this.roleMentionMap = new TLongHashSet(roleMentions.stream(DataArray::getUnsignedLong).collect(Collectors.toList()));
 

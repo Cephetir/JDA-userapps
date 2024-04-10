@@ -46,7 +46,6 @@ public abstract class AbstractMentions implements Mentions
     protected final String content;
     protected final JDAImpl jda;
     @Nullable protected final Guild guild;
-    protected final boolean isFromGuild;
     protected final boolean mentionsEveryone;
 
     protected List<User> mentionedUsers;
@@ -56,12 +55,11 @@ public abstract class AbstractMentions implements Mentions
     protected List<CustomEmoji> mentionedEmojis;
     protected List<SlashCommandReference> mentionedSlashCommands;
 
-    public AbstractMentions(String content, JDAImpl jda, @Nullable Guild guild, boolean isFromGuild, boolean mentionsEveryone)
+    public AbstractMentions(String content, JDAImpl jda, @Nullable Guild guild, boolean mentionsEveryone)
     {
         this.content = content;
         this.jda = jda;
         this.guild = guild;
-        this.isFromGuild = isFromGuild;
         this.mentionsEveryone = mentionsEveryone;
     }
 
@@ -147,7 +145,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public synchronized List<Role> getRoles()
     {
-        if (!isFromGuild)
+        if (guild == null)
             return Collections.emptyList();
         if (mentionedRoles != null)
             return mentionedRoles;
@@ -158,7 +156,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public Bag<Role> getRolesBag()
     {
-        if (!isFromGuild)
+        if (guild == null)
             return new HashBag<>();
         return processMentions(Message.MentionType.ROLE, false, this::matchRole, toBag());
     }
@@ -183,7 +181,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public synchronized List<Member> getMembers()
     {
-        if (!isFromGuild)
+        if (guild == null)
             return Collections.emptyList();
         if (mentionedMembers != null)
             return mentionedMembers;
@@ -194,7 +192,7 @@ public abstract class AbstractMentions implements Mentions
     @Override
     public Bag<Member> getMembersBag()
     {
-        if (!isFromGuild)
+        if (guild == null)
             return new HashBag<>();
         Bag<Member> bag = processMentions(Message.MentionType.USER, false, this::matchMember, toBag());
 
