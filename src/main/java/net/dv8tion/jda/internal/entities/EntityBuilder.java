@@ -88,6 +88,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.StreamSupport;
 
 public class EntityBuilder extends AbstractEntityBuilder
@@ -1247,6 +1248,13 @@ public class EntityBuilder extends AbstractEntityBuilder
         }
 
         configureThreadChannel(json, channel);
+
+        if (!json.isNull("applied_tags") && api.isCacheFlagSet(CacheFlag.FORUM_TAGS))
+        {
+            DataArray array = json.getArray("applied_tags");
+            channel.setAppliedTags(IntStream.range(0, array.length()).mapToLong(array::getUnsignedLong));
+        }
+
         channel.setParentChannel(parent);
 
         //If the bot in the thread already, then create a thread member for the bot.

@@ -30,8 +30,6 @@ import net.dv8tion.jda.internal.utils.Helpers;
 import net.dv8tion.jda.internal.utils.UnlockHook;
 import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
 
-import java.util.stream.IntStream;
-
 public abstract class AbstractEntityBuilder
 {
     protected final JDAImpl api;
@@ -111,12 +109,6 @@ public abstract class AbstractEntityBuilder
     protected void configureThreadChannel(DataObject json, ThreadChannelImpl channel)
     {
         DataObject threadMetadata = json.getObject("thread_metadata");
-
-        if (!json.isNull("applied_tags") && api.isCacheFlagSet(CacheFlag.FORUM_TAGS))
-        {
-            DataArray array = json.getArray("applied_tags");
-            channel.setAppliedTags(IntStream.range(0, array.length()).mapToLong(array::getUnsignedLong));
-        }
 
         channel
                 .setName(json.getString("name"))
