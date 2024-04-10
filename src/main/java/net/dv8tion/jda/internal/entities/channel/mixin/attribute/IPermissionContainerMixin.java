@@ -34,8 +34,7 @@ import java.util.List;
 public interface IPermissionContainerMixin<T extends IPermissionContainerMixin<T>> extends
         IPermissionContainer,
         IPermissionContainerUnion,
-        GuildChannelMixin<T>,
-        IInteractionPermissionMixin<T>
+        GuildChannelMixin<T>
 {
     // ---- Default implementations of interface ----
     @Override

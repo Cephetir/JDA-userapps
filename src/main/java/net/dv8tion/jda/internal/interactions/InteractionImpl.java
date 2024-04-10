@@ -18,6 +18,7 @@ package net.dv8tion.jda.internal.interactions;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.User;
 import net.dv8tion.jda.api.entities.channel.Channel;
@@ -35,6 +36,7 @@ import net.dv8tion.jda.internal.entities.InteractionEntityBuilder;
 import net.dv8tion.jda.internal.entities.MemberImpl;
 import net.dv8tion.jda.internal.entities.UserImpl;
 import net.dv8tion.jda.internal.entities.channel.concrete.PrivateChannelImpl;
+import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,7 +50,7 @@ public class InteractionImpl implements Interaction
     protected final int type;
     protected final String token;
     protected final long guildId;
-    protected final GuildImpl guild;
+    protected final Guild guild;
     protected final Member member;
     protected final User user;
     protected final Channel channel;
@@ -72,7 +74,7 @@ public class InteractionImpl implements Interaction
         this.token = data.getString("token");
         this.type = data.getInt("type");
         this.guildId = data.getLong("guild_id", 0L);
-        this.guild = (GuildImpl) api.getGuildById(guildId);
+        this.guild = data.optObject("guild").map(o -> interactionEntityBuilder.getOrCreateGuild(guildId, o)).orElse(null);
         this.channelId = data.getUnsignedLong("channel_id", 0L);
         this.userLocale = DiscordLocale.from(data.getString("locale", "en-US"));
         // Absent in guild-scoped commands
@@ -84,28 +86,29 @@ public class InteractionImpl implements Interaction
         this.integrationOwners = new IntegrationOwnersImpl(data.optObject("authorizing_integration_owners").orElseGet(DataObject::empty));
 
         DataObject channelJson = data.getObject("channel");
-        if (guild != null)
+        if (guild instanceof GuildImpl)
         {
-            member = jda.getEntityBuilder().createMember(guild, data.getObject("member"));
+            member = jda.getEntityBuilder().createMember((GuildImpl) guild, data.getObject("member"));
             jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
             user = member.getUser();
 
             GuildChannel channel = guild.getGuildChannelById(channelJson.getUnsignedLong("id"));
             if (channel == null && ChannelType.fromId(channelJson.getInt("type")).isThread())
-                channel = api.getEntityBuilder().createThreadChannel(guild, channelJson, guild.getIdLong(), false);
+                channel = api.getEntityBuilder().createThreadChannel((GuildImpl) guild, channelJson, guild.getIdLong(), false);
             if (channel == null)
                 throw new IllegalStateException("Failed to create channel instance for interaction! Channel Type: " + channelJson.getInt("type"));
             this.channel = channel;
         }
-        else if (guildId != 0)
+        else if (guild instanceof DetachedGuildImpl)
         {
-            member = interactionEntityBuilder.createMember(guildId, data.getObject("member"));
+            //TODO replace passing guild
+            member = interactionEntityBuilder.createMember(guild, data.getObject("member"));
             user = member.getUser();
 
             if (ChannelType.fromId(channelJson.getInt("type")).isThread())
-                channel = interactionEntityBuilder.createThreadChannel(guildId, channelJson);
+                channel = interactionEntityBuilder.createThreadChannel(guild, channelJson);
             else
-                channel = interactionEntityBuilder.createGuildChannel(guildId, channelJson);
+                channel = interactionEntityBuilder.createGuildChannel(guild, channelJson);
             if (channel == null)
                 throw new IllegalStateException("Failed to create channel instance for interaction! Channel Type: " + channelJson.getInt("type"));
         }
@@ -186,7 +189,7 @@ public class InteractionImpl implements Interaction
 
     @Nullable
     @Override
-    public GuildImpl getGuild()
+    public Guild getGuild()
     {
         return guild;
     }

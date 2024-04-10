@@ -57,6 +57,13 @@ public class NewsChannelImpl extends AbstractStandardGuildMessageChannelImpl<New
 
     @Nonnull
     @Override
+    public GuildImpl getGuild()
+    {
+        return ((GuildImpl) super.getGuild());
+    }
+
+    @Nonnull
+    @Override
     public ChannelType getType()
     {
         return ChannelType.NEWS;

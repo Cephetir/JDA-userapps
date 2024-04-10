@@ -120,7 +120,7 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                 {
                     DataObject memberJson = members.getObject(memberId);
                     memberJson.put("user", users.getObject(memberId)); // Add user json as well for parsing
-                    Member optionMember = interactionEntityBuilder.createMember(guildId, memberJson);
+                    Member optionMember = interactionEntityBuilder.createMember(guild, memberJson);
                     if (hasFullGuild())
                         entityBuilder.updateMemberCache((MemberImpl) optionMember);
                     resolved.put(optionMember.getIdLong(), optionMember); // This basically upgrades user to member
@@ -134,7 +134,7 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                         {
                             if (hasFullGuild())
                                 return guild.getRoleById(roleId);
-                            return interactionEntityBuilder.createRole(guildId, roles.getObject(roleId));
+                            return interactionEntityBuilder.createRole(guild, roles.getObject(roleId));
                         })
                         .filter(Objects::nonNull)
                         .forEach(role -> resolved.put(role.getIdLong(), role));
@@ -146,12 +146,9 @@ public class CommandInteractionPayloadImpl extends InteractionImpl implements Co
                     if (channelObj != null)
                         resolved.put(channelObj.getIdLong(), channelObj);
                     else if (ChannelType.fromId(channelJson.getInt("type")).isThread())
-                        if (hasFullGuild())
-                            resolved.put(Long.parseUnsignedLong(id), entityBuilder.createThreadChannel(getGuild(), channelJson, guild.getIdLong()));
-                        else
-                            resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createThreadChannel(guildId, channelJson));
+                        resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createThreadChannel(guild, channelJson));
                     else
-                        resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createGuildChannel(guildId, channelJson));
+                        resolved.put(Long.parseUnsignedLong(id), interactionEntityBuilder.createGuildChannel(guild, channelJson));
                 })
             );
         }

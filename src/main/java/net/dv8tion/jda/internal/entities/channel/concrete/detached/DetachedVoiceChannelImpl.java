@@ -14,49 +14,43 @@
  * limitations under the License.
  */
 
-package net.dv8tion.jda.internal.entities.channel.concrete;
+package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
-import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
-import net.dv8tion.jda.api.utils.MiscUtil;
-import net.dv8tion.jda.api.utils.data.DataObject;
-import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IWebhookContainerMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.AudioChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
-import net.dv8tion.jda.internal.managers.channel.concrete.VoiceChannelManagerImpl;
-import net.dv8tion.jda.internal.requests.restaction.AuditableRestActionImpl;
+import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
+import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.utils.Checks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
-public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChannelImpl> implements
+public class DetachedVoiceChannelImpl extends AbstractStandardGuildChannelImpl<DetachedVoiceChannelImpl>
+    implements
         VoiceChannel,
-        GuildMessageChannelMixin<VoiceChannelImpl>,
-        AudioChannelMixin<VoiceChannelImpl>,
-        IWebhookContainerMixin<VoiceChannelImpl>,
-        IAgeRestrictedChannelMixin<VoiceChannelImpl>,
-        ISlowmodeChannelMixin<VoiceChannelImpl>
+        GuildMessageChannelMixin<DetachedVoiceChannelImpl>,
+        AudioChannelMixin<DetachedVoiceChannelImpl>,
+        IWebhookContainerMixin<DetachedVoiceChannelImpl>,
+        IAgeRestrictedChannelMixin<DetachedVoiceChannelImpl>,
+        ISlowmodeChannelMixin<DetachedVoiceChannelImpl>,
+        IInteractionPermissionMixin<DetachedVoiceChannelImpl>
 {
-    private final TLongObjectMap<Member> connectedMembers = MiscUtil.newLongMap();
+    private ChannelInteractionPermissions interactionPermissions;
 
     private String region;
     private String status = "";
@@ -66,7 +60,7 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     private int slowmode;
     private boolean nsfw;
 
-    public VoiceChannelImpl(long id, GuildImpl guild)
+    public DetachedVoiceChannelImpl(long id, DetachedGuildImpl guild)
     {
         super(id, guild);
     }
@@ -74,14 +68,7 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     @Override
     public boolean isDetached()
     {
-        return false;
-    }
-
-    @Nonnull
-    @Override
-    public GuildImpl getGuild()
-    {
-        return ((GuildImpl) super.getGuild());
+        return true;
     }
 
     @Nonnull
@@ -139,45 +126,22 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     @Override
     public List<Member> getMembers()
     {
-        return Collections.unmodifiableList(new ArrayList<>(connectedMembers.valueCollection()));
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public ChannelAction<VoiceChannel> createCopy(@Nonnull Guild guild)
     {
-        Checks.notNull(guild, "Guild");
-
-        ChannelAction<VoiceChannel> action = guild.createVoiceChannel(name)
-                .setBitrate(bitrate)
-                .setUserlimit(userLimit);
-
-        if (region != null)
-        {
-            action.setRegion(Region.fromKey(region));
-        }
-
-        if (guild.equals(getGuild()))
-        {
-            Category parent = getParentCategory();
-            if (parent != null)
-                action.setParent(parent);
-            for (PermissionOverride o : overrides.valueCollection())
-            {
-                if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-                else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-            }
-        }
-        return action;
+        //TODO share common code with VoiceChannelMixin
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public VoiceChannelManager getManager()
     {
-        return new VoiceChannelManagerImpl(this);
+        throw detachedException();
     }
 
     @Nonnull
@@ -191,69 +155,75 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     @Override
     public AuditableRestAction<Void> modifyStatus(@Nonnull String status)
     {
-        Checks.notLonger(status, MAX_STATUS_LENGTH, "Voice Status");
-        checkCanAccessChannel();
-        if (this.equals(getGuild().getSelfMember().getVoiceState().getChannel()))
-            checkPermission(Permission.VOICE_SET_STATUS);
-        else
-            checkCanManage();
-
-        Route.CompiledRoute route = Route.Channels.SET_STATUS.compile(getId());
-        DataObject body = DataObject.empty().put("status", status);
-        return new AuditableRestActionImpl<>(api, route, body);
+        throw detachedException();
     }
 
     @Override
     public TLongObjectMap<Member> getConnectedMembersMap()
     {
-        return connectedMembers;
+        throw detachedException();
+    }
+
+    @Nonnull
+    @Override
+    public ChannelInteractionPermissions getInteractionPermissions()
+    {
+        return interactionPermissions;
     }
 
     @Override
-    public VoiceChannelImpl setBitrate(int bitrate)
+    public DetachedVoiceChannelImpl setBitrate(int bitrate)
     {
         this.bitrate = bitrate;
         return this;
     }
 
     @Override
-    public VoiceChannelImpl setRegion(String region)
+    public DetachedVoiceChannelImpl setRegion(String region)
     {
         this.region = region;
         return this;
     }
 
     @Override
-    public VoiceChannelImpl setUserLimit(int userLimit)
+    public DetachedVoiceChannelImpl setUserLimit(int userLimit)
     {
         this.userLimit = userLimit;
         return this;
     }
 
     @Override
-    public VoiceChannelImpl setNSFW(boolean nsfw)
+    public DetachedVoiceChannelImpl setNSFW(boolean nsfw)
     {
         this.nsfw = nsfw;
         return this;
     }
 
     @Override
-    public VoiceChannelImpl setSlowmode(int slowmode)
+    public DetachedVoiceChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
     @Override
-    public VoiceChannelImpl setLatestMessageIdLong(long latestMessageId)
+    public DetachedVoiceChannelImpl setLatestMessageIdLong(long latestMessageId)
     {
         this.latestMessageId = latestMessageId;
         return this;
     }
 
-    public VoiceChannelImpl setStatus(String status)
+    public DetachedVoiceChannelImpl setStatus(String status)
     {
         this.status = status;
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public DetachedVoiceChannelImpl setInteractionPermissions(@Nonnull ChannelInteractionPermissions interactionPermissions)
+    {
+        this.interactionPermissions = interactionPermissions;
         return this;
     }
 }

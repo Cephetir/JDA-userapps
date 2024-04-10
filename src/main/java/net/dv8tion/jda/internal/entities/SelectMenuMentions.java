@@ -41,7 +41,7 @@ public class SelectMenuMentions implements Mentions
     private final DataObject resolved;
     private final JDAImpl jda;
     private final InteractionEntityBuilder interactionEntityBuilder;
-    private final GuildImpl guild;
+    private final Guild guild;
     private final Long guildId;
     private final List<String> values;
 
@@ -50,7 +50,7 @@ public class SelectMenuMentions implements Mentions
     private List<Role> cachedRoles;
     private List<GuildChannel> cachedChannels;
 
-    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, @Nullable GuildImpl guild, @Nullable Long guildId, DataObject resolved, DataArray values)
+    public SelectMenuMentions(JDAImpl jda, InteractionEntityBuilder interactionEntityBuilder, @Nullable Guild guild, @Nullable Long guildId, DataObject resolved, DataArray values)
     {
         this.jda = jda;
         this.interactionEntityBuilder = interactionEntityBuilder;
@@ -114,14 +114,14 @@ public class SelectMenuMentions implements Mentions
                 .map(json ->
                 {
                     final ChannelType channelType = ChannelType.fromId(json.getInt("type", -1));
-                    if (guild != null)
+                    if (!guild.isDetached())
                         return guild.getGuildChannelById(channelType, json.getUnsignedLong("id"));
 
                     // Unknown guilds
                     if (channelType.isThread())
-                        return interactionEntityBuilder.createThreadChannel(guildId, json);
+                        return interactionEntityBuilder.createThreadChannel(guild, json);
                     // Will return null if the type isn't known
-                    return interactionEntityBuilder.createGuildChannel(guildId, json);
+                    return interactionEntityBuilder.createGuildChannel(guild, json);
                 })
                 .filter(Objects::nonNull)
                 .collect(Helpers.toUnmodifiableList());
@@ -167,9 +167,9 @@ public class SelectMenuMentions implements Mentions
                 .filter(Objects::nonNull)
                 .map(json ->
                 {
-                    if (guild != null)
+                    if (!guild.isDetached())
                         return guild.getRoleById(json.getUnsignedLong("id"));
-                    return interactionEntityBuilder.createRole(guildId, json);
+                    return interactionEntityBuilder.createRole(guild, json);
                 })
                 .filter(Objects::nonNull)
                 .collect(Helpers.toUnmodifiableList());
@@ -226,11 +226,12 @@ public class SelectMenuMentions implements Mentions
                 .map(id -> memberMap.optObject(id).map(m -> m.put("id", id)).orElse(null))
                 .filter(Objects::nonNull)
                 .map(json -> json.put("user", userMap.getObject(json.getString("id"))))
-                .map(json -> interactionEntityBuilder.createMember(guildId, json))
+                .map(json -> interactionEntityBuilder.createMember(guild, json))
                 .filter(Objects::nonNull)
                 .filter(member ->
                 {
-                    jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
+                    if (!member.isDetached())
+                        jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
                     return true;
                 })
                 .collect(Helpers.toUnmodifiableList());

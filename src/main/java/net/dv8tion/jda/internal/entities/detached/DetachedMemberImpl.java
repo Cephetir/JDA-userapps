@@ -14,9 +14,8 @@
  * limitations under the License.
  */
 
-package net.dv8tion.jda.internal.entities;
+package net.dv8tion.jda.internal.entities.detached;
 
-import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.OnlineStatus;
 import net.dv8tion.jda.api.Permission;
@@ -25,31 +24,27 @@ import net.dv8tion.jda.api.entities.channel.attribute.IPermissionContainer;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import net.dv8tion.jda.api.utils.cache.CacheFlag;
-import net.dv8tion.jda.api.utils.cache.CacheView;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IPermissionContainerMixin;
+import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
+import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.Helpers;
-import net.dv8tion.jda.internal.utils.PermissionUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.time.OffsetDateTime;
+import java.util.Collection;
+import java.util.EnumSet;
 import java.util.List;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Stream;
+import java.util.Objects;
 
-public class MemberImpl implements Member
+public class DetachedMemberImpl implements Member, IDetachableEntityMixin
 {
     private final JDAImpl api;
-    private final Set<Role> roles = ConcurrentHashMap.newKeySet();
-    private final GuildVoiceState voiceState;
 
-    private GuildImpl guild;
+    private final DetachedGuildImpl guild;
     private User user;
     private String nickname;
     private String avatarId;
@@ -57,32 +52,28 @@ public class MemberImpl implements Member
     private boolean pending = false;
     private int flags;
 
-    public MemberImpl(GuildImpl guild, User user)
+    // Permissions calculated by Discord
+    private MemberInteractionPermissions interactionPermissions;
+
+    public DetachedMemberImpl(DetachedGuildImpl guild, User user)
     {
         this.api = (JDAImpl) user.getJDA();
         this.guild = guild;
         this.user = user;
         this.joinDate = 0;
-        boolean cacheState = api.isCacheFlagSet(CacheFlag.VOICE_STATE) || user.equals(api.getSelfUser());
-        this.voiceState = cacheState ? new GuildVoiceStateImpl(this) : null;
     }
 
     @Override
     public boolean isDetached()
     {
-        return false;
-    }
-
-    public MemberPresenceImpl getPresence()
-    {
-        CacheView.SimpleCacheView<MemberPresenceImpl> presences = getGuild().getPresenceView();
-        return presences == null ? null : presences.get(getIdLong());
+        return true;
     }
 
     @Nonnull
     @Override
     public User getUser()
     {
+        // The user could come from another guild
         // Load user from cache if one exists, ideally two members with the same id should wrap the same user object
         User realUser = getJDA().getUserById(user.getIdLong());
         if (realUser != null)
@@ -105,11 +96,8 @@ public class MemberImpl implements Member
 
     @Nonnull
     @Override
-    public GuildImpl getGuild()
+    public Guild getGuild()
     {
-        GuildImpl realGuild = (GuildImpl) api.getGuildById(guild.getIdLong());
-        if (realGuild != null)
-            guild = realGuild;
         return guild;
     }
 
@@ -158,43 +146,35 @@ public class MemberImpl implements Member
     @Override
     public GuildVoiceState getVoiceState()
     {
-        return voiceState;
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public List<Activity> getActivities()
     {
-        MemberPresenceImpl presence = getPresence();
-        return presence == null ? Collections.emptyList() : presence.getActivities();
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public OnlineStatus getOnlineStatus()
     {
-        MemberPresenceImpl presence = getPresence();
-        return presence == null ? OnlineStatus.OFFLINE : presence.getOnlineStatus();
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public OnlineStatus getOnlineStatus(@Nonnull ClientType type)
     {
-        Checks.notNull(type, "Type");
-        MemberPresenceImpl presence = getPresence();
-        if (presence == null)
-            return OnlineStatus.OFFLINE;
-        OnlineStatus status = presence.getClientStatus().get(type);
-        return status == null ? OnlineStatus.OFFLINE : status;
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public EnumSet<ClientType> getActiveClients()
     {
-        MemberPresenceImpl presence = getPresence();
-        return presence == null ? EnumSet.noneOf(ClientType.class) : Helpers.copyEnumSet(ClientType.class, presence.getClientStatus().keySet());
+        throw detachedException();
     }
 
     @Override
@@ -220,10 +200,7 @@ public class MemberImpl implements Member
     @Override
     public List<Role> getRoles()
     {
-        List<Role> roleList = new ArrayList<>(roles);
-        roleList.sort(Comparator.reverseOrder());
-
-        return Collections.unmodifiableList(roleList);
+        throw detachedException();
     }
 
     @Override
@@ -254,50 +231,49 @@ public class MemberImpl implements Member
     @Override
     public long getEffectivePermissionsRaw()
     {
-        return PermissionUtil.getEffectivePermission(this);
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public EnumSet<Permission> getPermissions()
     {
-        return Permission.getPermissions(PermissionUtil.getEffectivePermission(this));
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public EnumSet<Permission> getPermissions(@Nonnull GuildChannel channel)
     {
-        Checks.notNull(channel, "Channel");
-        if (!getGuildId().equals(channel.getGuildId()))
-            throw new IllegalArgumentException("Provided channel is not in the same guild as this member!");
-
-        return Permission.getPermissions(PermissionUtil.getEffectivePermission(channel, this));
+        //TODO check if channel is interaction channel, if so give interaction permissions
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public EnumSet<Permission> getPermissionsExplicit()
     {
-        return Permission.getPermissions(PermissionUtil.getExplicitPermission(this));
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public EnumSet<Permission> getPermissionsExplicit(@Nonnull GuildChannel channel)
     {
-        return Permission.getPermissions(PermissionUtil.getExplicitPermission(channel, this));
+        //TODO check if channel is interaction channel, if so give interaction permissions
+        throw detachedException();
     }
 
     @Override
     public boolean hasPermission(@Nonnull Permission... permissions)
     {
-        return PermissionUtil.checkPermission(this, permissions);
+        throw detachedException();
     }
 
     @Override
     public boolean hasPermission(@Nonnull Collection<Permission> permissions)
     {
+        //TODO pull up
         Checks.notNull(permissions, "Permission Collection");
 
         return hasPermission(permissions.toArray(Permission.EMPTY_PERMISSIONS));
@@ -306,12 +282,14 @@ public class MemberImpl implements Member
     @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Permission... permissions)
     {
-        return PermissionUtil.checkPermission(channel, this, permissions);
+        //TODO check if channel is interaction channel, if so give interaction permissions
+        throw detachedException();
     }
 
     @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Collection<Permission> permissions)
     {
+        //TODO pull up
         Checks.notNull(permissions, "Permission Collection");
 
         return hasPermission(channel, permissions.toArray(Permission.EMPTY_PERMISSIONS));
@@ -320,74 +298,37 @@ public class MemberImpl implements Member
     @Override
     public boolean canSync(@Nonnull IPermissionContainer targetChannel, @Nonnull IPermissionContainer syncSource)
     {
-        Checks.notNull(targetChannel, "Channel");
-        Checks.notNull(syncSource, "Channel");
-        Checks.check(targetChannel.getGuild().equals(getGuild()), "Channels must be from the same guild!");
-        Checks.check(syncSource.getGuild().equals(getGuild()), "Channels must be from the same guild!");
-        long userPerms = PermissionUtil.getEffectivePermission(targetChannel, this);
-        if ((userPerms & Permission.MANAGE_PERMISSIONS.getRawValue()) == 0)
-            return false; // We can't manage permissions at all!
-
-        long channelPermissions = PermissionUtil.getExplicitPermission(targetChannel, this, false);
-        // If the user has ADMINISTRATOR or MANAGE_PERMISSIONS then it can also set any other permission on the channel
-        boolean hasLocalAdmin = ((userPerms & Permission.ADMINISTRATOR.getRawValue()) | (channelPermissions & Permission.MANAGE_PERMISSIONS.getRawValue())) != 0;
-        if (hasLocalAdmin)
-            return true;
-
-        TLongObjectMap<PermissionOverride> existingOverrides = ((IPermissionContainerMixin<?>) targetChannel).getPermissionOverrideMap();
-        for (PermissionOverride override : syncSource.getPermissionOverrides())
-        {
-            PermissionOverride existing = existingOverrides.get(override.getIdLong());
-            long allow = override.getAllowedRaw();
-            long deny = override.getDeniedRaw();
-            if (existing != null)
-            {
-                allow ^= existing.getAllowedRaw();
-                deny ^= existing.getDeniedRaw();
-            }
-            // If any permissions changed that the user doesn't have in the channel, they can't sync it :(
-            if (((allow | deny) & ~userPerms) != 0)
-                return false;
-        }
-        return true;
+        throw detachedException();
     }
 
     @Override
     public boolean canSync(@Nonnull IPermissionContainer channel)
     {
-        Checks.notNull(channel, "Channel");
-        Checks.check(channel.getGuild().equals(getGuild()), "Channels must be from the same guild!");
-        long userPerms = PermissionUtil.getEffectivePermission(channel, this);
-        if ((userPerms & Permission.MANAGE_PERMISSIONS.getRawValue()) == 0)
-            return false; // We can't manage permissions at all!
-
-        long channelPermissions = PermissionUtil.getExplicitPermission(channel, this, false);
-        // If the user has ADMINISTRATOR or MANAGE_PERMISSIONS then it can also set any other permission on the channel
-        return ((userPerms & Permission.ADMINISTRATOR.getRawValue()) | (channelPermissions & Permission.MANAGE_PERMISSIONS.getRawValue())) != 0;
+        throw detachedException();
     }
 
     @Override
     public boolean canInteract(@Nonnull Member member)
     {
-        return PermissionUtil.canInteract(this, member);
+        throw detachedException();
     }
 
     @Override
     public boolean canInteract(@Nonnull Role role)
     {
-        return PermissionUtil.canInteract(this, role);
+        throw detachedException();
     }
 
     @Override
     public boolean canInteract(@Nonnull RichCustomEmoji emoji)
     {
-        return PermissionUtil.canInteract(this, emoji);
+        throw detachedException();
     }
 
     @Override
     public boolean isOwner()
     {
-        return this.user.getIdLong() == getGuild().getOwnerIdLong();
+        throw detachedException();
     }
 
     @Override
@@ -413,10 +354,7 @@ public class MemberImpl implements Member
     @Override
     public DefaultGuildChannelUnion getDefaultChannel()
     {
-        return (DefaultGuildChannelUnion) Stream.concat(getGuild().getTextChannelCache().stream(), getGuild().getNewsChannelCache().stream())
-                .filter(c -> hasPermission(c, Permission.VIEW_CHANNEL))
-                .min(Comparator.naturalOrder())
-                .orElse(null);
+        throw detachedException();
     }
 
     @Nonnull
@@ -426,51 +364,58 @@ public class MemberImpl implements Member
         return user.getDefaultAvatarId();
     }
 
-    public MemberImpl setNickname(String nickname)
+    @Nonnull
+    public MemberInteractionPermissions getInteractionPermissions()
+    {
+        return interactionPermissions;
+    }
+
+    public DetachedMemberImpl setNickname(String nickname)
     {
         this.nickname = nickname;
         return this;
     }
 
-    public MemberImpl setAvatarId(String avatarId)
+    public DetachedMemberImpl setAvatarId(String avatarId)
     {
         this.avatarId = avatarId;
         return this;
     }
 
-    public MemberImpl setJoinDate(long joinDate)
+    public DetachedMemberImpl setJoinDate(long joinDate)
     {
         this.joinDate = joinDate;
         return this;
     }
 
-    public MemberImpl setBoostDate(long boostDate)
+    public DetachedMemberImpl setBoostDate(long boostDate)
     {
         this.boostDate = boostDate;
         return this;
     }
 
-    public MemberImpl setTimeOutEnd(long time)
+    public DetachedMemberImpl setTimeOutEnd(long time)
     {
         this.timeOutEnd = time;
         return this;
     }
 
-    public MemberImpl setPending(boolean pending)
+    public DetachedMemberImpl setPending(boolean pending)
     {
         this.pending = pending;
         return this;
     }
 
-    public MemberImpl setFlags(int flags)
+    public DetachedMemberImpl setFlags(int flags)
     {
         this.flags = flags;
         return this;
     }
 
-    public Set<Role> getRoleSet()
+    public DetachedMemberImpl setInteractionPermissions(@Nonnull MemberInteractionPermissions interactionPermissions)
     {
-        return roles;
+        this.interactionPermissions = interactionPermissions;
+        return this;
     }
 
     public long getBoostDateRaw()
@@ -488,10 +433,10 @@ public class MemberImpl implements Member
     {
         if (o == this)
             return true;
-        if (!(o instanceof MemberImpl))
+        if (!(o instanceof DetachedMemberImpl))
             return false;
 
-        MemberImpl oMember = (MemberImpl) o;
+        DetachedMemberImpl oMember = (DetachedMemberImpl) o;
         return oMember.user.getIdLong() == user.getIdLong()
             && oMember.guild.getIdLong() == guild.getIdLong();
     }

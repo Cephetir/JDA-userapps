@@ -17,10 +17,7 @@
 package net.dv8tion.jda.internal.entities;
 
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.api.entities.IMentionable;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.Role;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.JDAImpl;
@@ -33,7 +30,7 @@ public class InteractionMentions extends AbstractMentions
 {
     protected final TLongObjectMap<Object> resolved;
 
-    public InteractionMentions(String content, TLongObjectMap<Object> resolved, JDAImpl jda, @Nullable GuildImpl guild, boolean isFromGuild)
+    public InteractionMentions(String content, TLongObjectMap<Object> resolved, JDAImpl jda, @Nullable Guild guild, boolean isFromGuild)
     {
         super(content, jda, guild, isFromGuild, false);
         this.resolved = resolved;

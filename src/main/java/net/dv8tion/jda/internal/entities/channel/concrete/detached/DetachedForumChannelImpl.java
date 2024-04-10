@@ -14,33 +14,27 @@
  * limitations under the License.
  */
 
-package net.dv8tion.jda.internal.entities.channel.concrete;
+package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelFlag;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
-import net.dv8tion.jda.api.entities.channel.concrete.MediaChannel;
+import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.entities.channel.forums.ForumTag;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
-import net.dv8tion.jda.api.entities.emoji.UnicodeEmoji;
-import net.dv8tion.jda.api.managers.channel.concrete.MediaChannelManager;
+import net.dv8tion.jda.api.managers.channel.concrete.ForumChannelManager;
 import net.dv8tion.jda.api.requests.restaction.ChannelAction;
-import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.*;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.StandardGuildChannelMixin;
+import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
-import net.dv8tion.jda.internal.managers.channel.concrete.MediaChannelManagerImpl;
-import net.dv8tion.jda.internal.utils.Checks;
-import net.dv8tion.jda.internal.utils.Helpers;
+import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
 
 import javax.annotation.Nonnull;
@@ -48,17 +42,19 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
 
-public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
-    implements MediaChannel,
+public class DetachedForumChannelImpl extends AbstractGuildChannelImpl<DetachedForumChannelImpl>
+    implements
+        ForumChannel,
         GuildChannelUnion,
-        StandardGuildChannelMixin<MediaChannelImpl>,
-        IAgeRestrictedChannelMixin<MediaChannelImpl>,
-        ISlowmodeChannelMixin<MediaChannelImpl>,
-        IWebhookContainerMixin<MediaChannelImpl>,
-        IPostContainerMixin<MediaChannelImpl>,
-        ITopicChannelMixin<MediaChannelImpl>
+        StandardGuildChannelMixin<DetachedForumChannelImpl>,
+        IAgeRestrictedChannelMixin<DetachedForumChannelImpl>,
+        ISlowmodeChannelMixin<DetachedForumChannelImpl>,
+        IWebhookContainerMixin<DetachedForumChannelImpl>,
+        IPostContainerMixin<DetachedForumChannelImpl>,
+        ITopicChannelMixin<DetachedForumChannelImpl>,
+        IInteractionPermissionMixin<DetachedForumChannelImpl>
 {
-    private final TLongObjectMap<PermissionOverride> overrides = MiscUtil.newLongMap();
+    private ChannelInteractionPermissions interactionPermissions;
     private final SortedSnowflakeCacheViewImpl<ForumTag> tagCache = new SortedSnowflakeCacheViewImpl<>(ForumTag.class, ForumTag::getName, Comparator.naturalOrder());
 
     private Emoji defaultReaction;
@@ -69,9 +65,10 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
     private int flags;
     private int slowmode;
     private int defaultSortOrder;
+    private int defaultLayout;
     protected int defaultThreadSlowmode;
 
-    public MediaChannelImpl(long id, GuildImpl guild)
+    public DetachedForumChannelImpl(long id, DetachedGuildImpl guild)
     {
         super(id, guild);
     }
@@ -79,62 +76,29 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
     @Override
     public boolean isDetached()
     {
-        return false;
+        return true;
     }
 
     @Nonnull
     @Override
-    public GuildImpl getGuild()
+    public ForumChannelManager getManager()
     {
-        return ((GuildImpl) super.getGuild());
-    }
-
-    @Nonnull
-    @Override
-    public MediaChannelManager getManager()
-    {
-        return new MediaChannelManagerImpl(this);
+        throw detachedException();
     }
 
     @Nonnull
     @Override
     public List<Member> getMembers()
     {
-        return getGuild().getMembers()
-                .stream()
-                .filter(m -> m.hasPermission(this, Permission.VIEW_CHANNEL))
-                .collect(Helpers.toUnmodifiableList());
+        throw detachedException();
     }
 
     @Nonnull
     @Override
-    public ChannelAction<MediaChannel> createCopy(@Nonnull Guild guild)
+    public ChannelAction<ForumChannel> createCopy(@Nonnull Guild guild)
     {
-        Checks.notNull(guild, "Guild");
-        ChannelAction<MediaChannel> action = guild.createMediaChannel(name)
-                .setNSFW(nsfw)
-                .setTopic(topic)
-                .setSlowmode(slowmode)
-                .setAvailableTags(getAvailableTags());
-        if (defaultSortOrder != -1)
-            action.setDefaultSortOrder(SortOrder.fromKey(defaultSortOrder));
-        if (defaultReaction instanceof UnicodeEmoji)
-            action.setDefaultReaction(defaultReaction);
-        if (guild.equals(getGuild()))
-        {
-            Category parent = getParentCategory();
-            action.setDefaultReaction(defaultReaction);
-            if (parent != null)
-                action.setParent(parent);
-            for (PermissionOverride o : overrides.valueCollection())
-            {
-                if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-                else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-            }
-        }
-        return action;
+        //TODO share common code with ForumChannelMixin
+        throw detachedException();
     }
 
     @Nonnull
@@ -154,7 +118,14 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
     @Override
     public TLongObjectMap<PermissionOverride> getPermissionOverrideMap()
     {
-        return overrides;
+        throw detachedException();
+    }
+
+    @Nonnull
+    @Override
+    public ChannelInteractionPermissions getInteractionPermissions()
+    {
+        return interactionPermissions;
     }
 
     @Override
@@ -206,6 +177,13 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
         return SortOrder.fromKey(defaultSortOrder);
     }
 
+    @Nonnull
+    @Override
+    public Layout getDefaultLayout()
+    {
+        return Layout.fromKey(defaultLayout);
+    }
+
     public int getRawFlags()
     {
         return flags;
@@ -216,57 +194,61 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
         return defaultSortOrder;
     }
 
+    public int getRawLayout()
+    {
+        return defaultLayout;
+    }
+
     // Setters
 
     @Override
-    public MediaChannelImpl setParentCategory(long parentCategoryId)
+    public DetachedForumChannelImpl setParentCategory(long parentCategoryId)
     {
         this.parentCategoryId = parentCategoryId;
         return this;
     }
 
     @Override
-    public MediaChannelImpl setPosition(int position)
+    public DetachedForumChannelImpl setPosition(int position)
     {
         this.position = position;
         return this;
     }
 
     @Override
-    public MediaChannelImpl setDefaultThreadSlowmode(int defaultThreadSlowmode)
+    public DetachedForumChannelImpl setDefaultThreadSlowmode(int defaultThreadSlowmode)
     {
         this.defaultThreadSlowmode = defaultThreadSlowmode;
         return this;
     }
 
-    @Override
-    public MediaChannelImpl setNSFW(boolean nsfw)
+    public DetachedForumChannelImpl setNSFW(boolean nsfw)
     {
         this.nsfw = nsfw;
         return this;
     }
 
-    @Override
-    public MediaChannelImpl setSlowmode(int slowmode)
+    public DetachedForumChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
-    @Override
-    public MediaChannelImpl setTopic(String topic)
+    public DetachedForumChannelImpl setTopic(String topic)
     {
         this.topic = topic;
         return this;
     }
 
-    public MediaChannelImpl setFlags(int flags)
+    @Override
+    public DetachedForumChannelImpl setFlags(int flags)
     {
         this.flags = flags;
         return this;
     }
 
-    public MediaChannelImpl setDefaultReaction(DataObject emoji)
+    @Override
+    public DetachedForumChannelImpl setDefaultReaction(DataObject emoji)
     {
         if (emoji != null && !emoji.isNull("emoji_id"))
             this.defaultReaction = new CustomEmojiImpl("", emoji.getUnsignedLong("emoji_id"), false);
@@ -277,9 +259,24 @@ public class MediaChannelImpl extends AbstractGuildChannelImpl<MediaChannelImpl>
         return this;
     }
 
-    public MediaChannelImpl setDefaultSortOrder(int defaultSortOrder)
+    @Override
+    public DetachedForumChannelImpl setDefaultSortOrder(int defaultSortOrder)
     {
         this.defaultSortOrder = defaultSortOrder;
+        return this;
+    }
+
+    public DetachedForumChannelImpl setDefaultLayout(int layout)
+    {
+        this.defaultLayout = layout;
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public DetachedForumChannelImpl setInteractionPermissions(@Nonnull ChannelInteractionPermissions interactionPermissions)
+    {
+        this.interactionPermissions = interactionPermissions;
         return this;
     }
 }

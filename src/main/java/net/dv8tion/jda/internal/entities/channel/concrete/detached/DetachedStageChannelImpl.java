@@ -14,17 +14,14 @@
  * limitations under the License.
  */
 
-package net.dv8tion.jda.internal.entities.channel.concrete;
+package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.Region;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.StageInstance;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.StageChannel;
 import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.managers.channel.concrete.StageChannelManager;
@@ -34,13 +31,15 @@ import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.requests.restaction.StageInstanceAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
-import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IAgeRestrictedChannelMixin;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.ISlowmodeChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IWebhookContainerMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.AudioChannelMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.middleman.GuildMessageChannelMixin;
+import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
+import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.managers.channel.concrete.StageChannelManagerImpl;
 import net.dv8tion.jda.internal.requests.RestActionImpl;
 import net.dv8tion.jda.internal.requests.restaction.StageInstanceActionImpl;
@@ -54,15 +53,18 @@ import java.util.Collections;
 import java.util.EnumSet;
 import java.util.List;
 
-public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChannelImpl> implements
+public class DetachedStageChannelImpl extends AbstractStandardGuildChannelImpl<DetachedStageChannelImpl>
+    implements
         StageChannel,
-        AudioChannelMixin<StageChannelImpl>,
-        GuildMessageChannelMixin<StageChannelImpl>,
-        IWebhookContainerMixin<StageChannelImpl>,
-        IAgeRestrictedChannelMixin<StageChannelImpl>,
-        ISlowmodeChannelMixin<StageChannelImpl>
+        AudioChannelMixin<DetachedStageChannelImpl>,
+        GuildMessageChannelMixin<DetachedStageChannelImpl>,
+        IWebhookContainerMixin<DetachedStageChannelImpl>,
+        IAgeRestrictedChannelMixin<DetachedStageChannelImpl>,
+        ISlowmodeChannelMixin<DetachedStageChannelImpl>,
+        IInteractionPermissionMixin<DetachedStageChannelImpl>
 {
     private final TLongObjectMap<Member> connectedMembers = MiscUtil.newLongMap();
+    private ChannelInteractionPermissions interactionPermissions;
 
     private StageInstance instance;
     private String region;
@@ -72,7 +74,7 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
     private boolean ageRestricted;
     private long latestMessageId;
 
-    public StageChannelImpl(long id, GuildImpl guild)
+    public DetachedStageChannelImpl(long id, DetachedGuildImpl guild)
     {
         super(id, guild);
     }
@@ -80,14 +82,7 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
     @Override
     public boolean isDetached()
     {
-        return false;
-    }
-
-    @Nonnull
-    @Override
-    public GuildImpl getGuild()
-    {
-        return ((GuildImpl) super.getGuild());
+        return true;
     }
     
     @Nonnull
@@ -149,29 +144,8 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
     @Override
     public ChannelAction<StageChannel> createCopy(@Nonnull Guild guild)
     {
-        Checks.notNull(guild, "Guild");
-
-        ChannelAction<StageChannel> action = guild.createStageChannel(name).setBitrate(bitrate);
-
-        if (region != null)
-        {
-            action.setRegion(Region.fromKey(region));
-        }
-
-        if (guild.equals(getGuild()))
-        {
-            Category parent = getParentCategory();
-            if (parent != null)
-                action.setParent(parent);
-            for (PermissionOverride o : overrides.valueCollection())
-            {
-                if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-                else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-            }
-        }
-        return action;
+        //TODO share common code with StageChannelMixin
+        throw detachedException();
     }
 
     @Override
@@ -246,51 +220,66 @@ public class StageChannelImpl extends AbstractStandardGuildChannelImpl<StageChan
         return connectedMembers;
     }
 
+    @Nonnull
     @Override
-    public StageChannelImpl setBitrate(int bitrate)
+    public ChannelInteractionPermissions getInteractionPermissions()
+    {
+        return interactionPermissions;
+    }
+
+    @Override
+    public DetachedStageChannelImpl setBitrate(int bitrate)
     {
         this.bitrate = bitrate;
         return this;
     }
 
     @Override
-    public StageChannelImpl setUserLimit(int userlimit)
+    public DetachedStageChannelImpl setUserLimit(int userlimit)
     {
         this.userlimit = userlimit;
         return this;
     }
 
     @Override
-    public StageChannelImpl setRegion(String region)
+    public DetachedStageChannelImpl setRegion(String region)
     {
         this.region = region;
         return this;
     }
 
-    public StageChannelImpl setStageInstance(StageInstance instance)
+    public DetachedStageChannelImpl setStageInstance(StageInstance instance)
     {
         this.instance = instance;
         return this;
     }
 
     @Override
-    public StageChannelImpl setNSFW(boolean ageRestricted)
+    public DetachedStageChannelImpl setNSFW(boolean ageRestricted)
     {
         this.ageRestricted = ageRestricted;
         return this;
     }
 
     @Override
-    public StageChannelImpl setSlowmode(int slowmode)
+    public DetachedStageChannelImpl setSlowmode(int slowmode)
     {
         this.slowmode = slowmode;
         return this;
     }
 
     @Override
-    public StageChannelImpl setLatestMessageIdLong(long latestMessageId)
+    public DetachedStageChannelImpl setLatestMessageIdLong(long latestMessageId)
     {
         this.latestMessageId = latestMessageId;
+        return this;
+    }
+
+    @Nonnull
+    @Override
+    public DetachedStageChannelImpl setInteractionPermissions(@Nonnull ChannelInteractionPermissions interactionPermissions)
+    {
+        this.interactionPermissions = interactionPermissions;
         return this;
     }
 }

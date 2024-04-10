@@ -23,8 +23,8 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import net.dv8tion.jda.internal.entities.MemberImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
+import net.dv8tion.jda.internal.entities.detached.DetachedMemberImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import org.apache.commons.collections4.CollectionUtils;
@@ -545,7 +545,7 @@ public class PermissionUtil
 
     private static long getInteractionPermissions(GuildChannel channel, Member member)
     {
-        final MemberInteractionPermissions memberInteractionPermissions = ((MemberImpl) member).getInteractionPermissions();
+        final MemberInteractionPermissions memberInteractionPermissions = ((DetachedMemberImpl) member).getInteractionPermissions();
         if (memberInteractionPermissions.getChannelId() == channel.getIdLong())
             return memberInteractionPermissions.getPermissions();
 

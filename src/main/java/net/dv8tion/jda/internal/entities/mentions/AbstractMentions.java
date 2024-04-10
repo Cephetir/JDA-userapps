@@ -27,7 +27,6 @@ import net.dv8tion.jda.api.interactions.commands.ICommandReference;
 import net.dv8tion.jda.api.interactions.commands.SlashCommandReference;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.internal.JDAImpl;
-import net.dv8tion.jda.internal.entities.GuildImpl;
 import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.Helpers;
 import org.apache.commons.collections4.Bag;
@@ -46,7 +45,7 @@ public abstract class AbstractMentions implements Mentions
 {
     protected final String content;
     protected final JDAImpl jda;
-    @Nullable protected final GuildImpl guild;
+    @Nullable protected final Guild guild;
     protected final boolean isFromGuild;
     protected final boolean mentionsEveryone;
 
@@ -57,7 +56,7 @@ public abstract class AbstractMentions implements Mentions
     protected List<CustomEmoji> mentionedEmojis;
     protected List<SlashCommandReference> mentionedSlashCommands;
 
-    public AbstractMentions(String content, JDAImpl jda, @Nullable GuildImpl guild, boolean isFromGuild, boolean mentionsEveryone)
+    public AbstractMentions(String content, JDAImpl jda, @Nullable Guild guild, boolean isFromGuild, boolean mentionsEveryone)
     {
         this.content = content;
         this.jda = jda;
