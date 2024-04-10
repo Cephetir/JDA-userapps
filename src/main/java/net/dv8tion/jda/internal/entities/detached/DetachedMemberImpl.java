@@ -28,7 +28,6 @@ import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
 import net.dv8tion.jda.internal.entities.mixin.MemberMixin;
 import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
-import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.Helpers;
 
@@ -36,7 +35,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Objects;
@@ -272,28 +270,10 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     }
 
     @Override
-    public boolean hasPermission(@Nonnull Collection<Permission> permissions)
-    {
-        //TODO pull up
-        Checks.notNull(permissions, "Permission Collection");
-
-        return hasPermission(permissions.toArray(Permission.EMPTY_PERMISSIONS));
-    }
-
-    @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Permission... permissions)
     {
         //TODO check if channel is interaction channel, if so give interaction permissions
         throw detachedException();
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Collection<Permission> permissions)
-    {
-        //TODO pull up
-        Checks.notNull(permissions, "Permission Collection");
-
-        return hasPermission(channel, permissions.toArray(Permission.EMPTY_PERMISSIONS));
     }
 
     @Override

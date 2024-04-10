@@ -46,7 +46,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.EnumSet;
 import java.util.Objects;
 
@@ -198,14 +197,6 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
     }
 
     @Override
-    public boolean hasPermission(@Nonnull Collection<Permission> permissions)
-    {
-        Checks.notNull(permissions, "Permission Collection");
-
-        return hasPermission(permissions.toArray(Permission.EMPTY_PERMISSIONS));
-    }
-
-    @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Permission... permissions)
     {
         long effectivePerms = PermissionUtil.getEffectivePermission(channel.getPermissionContainer(), this);
@@ -216,14 +207,6 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
                 return false;
         }
         return true;
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Collection<Permission> permissions)
-    {
-        Checks.notNull(permissions, "Permission Collection");
-
-        return hasPermission(channel, permissions.toArray(Permission.EMPTY_PERMISSIONS));
     }
 
     @Override

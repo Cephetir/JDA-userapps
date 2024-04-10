@@ -32,7 +32,6 @@ import net.dv8tion.jda.internal.JDAImpl;
 import net.dv8tion.jda.internal.entities.RoleImpl.RoleTagsImpl;
 import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
 import net.dv8tion.jda.internal.entities.mixin.RoleMixin;
-import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.PermissionUtil;
 import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
@@ -41,7 +40,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.awt.*;
 import java.time.OffsetDateTime;
-import java.util.Collection;
 import java.util.EnumSet;
 
 public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDetachableEntityMixin
@@ -177,21 +175,7 @@ public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDet
     }
 
     @Override
-    public boolean hasPermission(@Nonnull Collection<Permission> permissions)
-    {
-        Checks.notNull(permissions, "Permission Collection");
-
-        return hasPermission(permissions.toArray(Permission.EMPTY_PERMISSIONS));
-    }
-
-    @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Permission... permissions)
-    {
-        throw detachedException();
-    }
-
-    @Override
-    public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Collection<Permission> permissions)
     {
         throw detachedException();
     }
