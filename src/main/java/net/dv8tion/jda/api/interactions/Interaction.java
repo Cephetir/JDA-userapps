@@ -119,7 +119,9 @@ public interface Interaction extends ISnowflake, IPartialGuildHolder
     @Override
     default boolean hasFullGuild()
     {
-        return getGuild() != null;
+        final Guild guild = getGuild();
+        if (guild == null) return false;
+        return !guild.isDetached();
     }
 
     /**

@@ -71,6 +71,12 @@ public class MemberImpl implements Member
         this.voiceState = cacheState ? new GuildVoiceStateImpl(this) : null;
     }
 
+    @Override
+    public boolean isDetached()
+    {
+        return false;
+    }
+
     public MemberPresenceImpl getPresence()
     {
         CacheView.SimpleCacheView<MemberPresenceImpl> presences = getGuild().getPresenceView();
