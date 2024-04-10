@@ -18,14 +18,12 @@ package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.StageInstance;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.StageChannel;
 import net.dv8tion.jda.api.managers.channel.concrete.StageChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.requests.restaction.StageInstanceAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
@@ -108,14 +106,6 @@ public class DetachedStageChannelImpl extends AbstractStandardGuildChannelImpl<D
     @Override
     public StageInstanceAction createStageInstance(@Nonnull String topic)
     {
-        throw detachedException();
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<StageChannel> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with StageChannelMixin
         throw detachedException();
     }
 

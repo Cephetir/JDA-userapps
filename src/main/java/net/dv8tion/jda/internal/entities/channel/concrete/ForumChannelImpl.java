@@ -18,19 +18,15 @@ package net.dv8tion.jda.internal.entities.channel.concrete;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelFlag;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.ForumChannel;
 import net.dv8tion.jda.api.entities.channel.forums.ForumTag;
 import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
-import net.dv8tion.jda.api.entities.emoji.UnicodeEmoji;
 import net.dv8tion.jda.api.managers.channel.concrete.ForumChannelManager;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
@@ -38,7 +34,6 @@ import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelI
 import net.dv8tion.jda.internal.entities.channel.mixin.concrete.ForumChannelMixin;
 import net.dv8tion.jda.internal.entities.emoji.CustomEmojiImpl;
 import net.dv8tion.jda.internal.managers.channel.concrete.ForumChannelManagerImpl;
-import net.dv8tion.jda.internal.utils.Checks;
 import net.dv8tion.jda.internal.utils.Helpers;
 import net.dv8tion.jda.internal.utils.cache.SortedSnowflakeCacheViewImpl;
 
@@ -99,38 +94,6 @@ public class ForumChannelImpl extends AbstractGuildChannelImpl<ForumChannelImpl>
                 .stream()
                 .filter(m -> m.hasPermission(this, Permission.VIEW_CHANNEL))
                 .collect(Helpers.toUnmodifiableList());
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<ForumChannel> createCopy(@Nonnull Guild guild)
-    {
-        Checks.notNull(guild, "Guild");
-        ChannelAction<ForumChannel> action = guild.createForumChannel(name)
-                .setNSFW(nsfw)
-                .setTopic(topic)
-                .setSlowmode(slowmode)
-                .setAvailableTags(getAvailableTags())
-                .setDefaultLayout(Layout.fromKey(defaultLayout));
-        if (defaultSortOrder != -1)
-            action.setDefaultSortOrder(SortOrder.fromKey(defaultSortOrder));
-        if (defaultReaction instanceof UnicodeEmoji)
-            action.setDefaultReaction(defaultReaction);
-        if (guild.equals(getGuild()))
-        {
-            Category parent = getParentCategory();
-            action.setDefaultReaction(defaultReaction);
-            if (parent != null)
-                action.setParent(parent);
-            for (PermissionOverride o : overrides.valueCollection())
-            {
-                if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-                else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-            }
-        }
-        return action;
     }
 
     @Nonnull

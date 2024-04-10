@@ -30,7 +30,6 @@ import net.dv8tion.jda.api.exceptions.InsufficientPermissionException;
 import net.dv8tion.jda.api.managers.RoleManager;
 import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
@@ -303,20 +302,6 @@ public class RoleImpl implements Role, RoleMixin<RoleImpl>
     public Long getGuildId()
     {
         return guild.getIdLong();
-    }
-
-    @Nonnull
-    @Override
-    public RoleAction createCopy(@Nonnull Guild guild)
-    {
-        Checks.notNull(guild, "Guild");
-        return guild.createRole()
-                    .setColor(color)
-                    .setHoisted(hoisted)
-                    .setMentionable(mentionable)
-                    .setName(name)
-                    .setPermissions(rawPermissions)
-                    .setIcon(icon == null ? null : icon.getEmoji()); // we can only copy the emoji as we don't have access to the Icon instance
     }
 
     @Nonnull

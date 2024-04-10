@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Webhook;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
@@ -24,7 +23,6 @@ import net.dv8tion.jda.api.entities.channel.concrete.NewsChannel;
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.managers.channel.concrete.NewsChannelManager;
 import net.dv8tion.jda.api.requests.RestAction;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildMessageChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.concrete.NewsChannelMixin;
@@ -72,14 +70,6 @@ public class DetachedNewsChannelImpl extends AbstractStandardGuildMessageChannel
     @Override
     public RestAction<Webhook.WebhookReference> follow(@Nonnull String targetChannelId)
     {
-        throw detachedException();
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<NewsChannel> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with NewsChannelMixin
         throw detachedException();
     }
 

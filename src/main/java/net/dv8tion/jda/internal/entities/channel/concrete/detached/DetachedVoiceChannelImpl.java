@@ -17,20 +17,16 @@
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.concrete.VoiceChannelMixin;
 import net.dv8tion.jda.internal.entities.detached.DetachedGuildImpl;
 import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
-import net.dv8tion.jda.internal.utils.Checks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -102,13 +98,6 @@ public class DetachedVoiceChannelImpl extends AbstractStandardGuildChannelImpl<D
     }
 
     @Override
-    public boolean canTalk(@Nonnull Member member)
-    {
-        Checks.notNull(member, "Member");
-        return member.hasPermission(this, Permission.MESSAGE_SEND);
-    }
-
-    @Override
     public long getLatestMessageIdLong()
     {
         return latestMessageId;
@@ -118,14 +107,6 @@ public class DetachedVoiceChannelImpl extends AbstractStandardGuildChannelImpl<D
     @Override
     public List<Member> getMembers()
     {
-        throw detachedException();
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<VoiceChannel> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with VoiceChannelMixin
         throw detachedException();
     }
 

@@ -16,7 +16,6 @@
 
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
-import net.dv8tion.jda.api.Permission;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.Message;
 import net.dv8tion.jda.api.entities.ThreadMember;
@@ -285,10 +284,7 @@ public class DetachedThreadChannelImpl extends AbstractGuildChannelImpl<Detached
     @Override
     public void checkCanManage()
     {
-        if (isOwner())
-            return;
-
-        checkPermission(Permission.MANAGE_THREADS);
+        throw detachedException();
     }
 
     @Nonnull
@@ -395,15 +391,5 @@ public class DetachedThreadChannelImpl extends AbstractGuildChannelImpl<Detached
     {
         this.interactionPermissions = interactionPermissions;
         return this;
-    }
-
-    public long getArchiveTimestamp()
-    {
-        return archiveTimestamp;
-    }
-
-    public int getRawFlags()
-    {
-        return flags;
     }
 }

@@ -16,13 +16,32 @@
 
 package net.dv8tion.jda.internal.entities.mixin;
 
+import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Role;
 import net.dv8tion.jda.api.entities.RoleIcon;
+import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
+import net.dv8tion.jda.internal.utils.Checks;
+
+import javax.annotation.Nonnull;
 
 public interface RoleMixin<T extends RoleMixin<T>>
     extends Role
 {
+    @Nonnull
+    @Override
+    default RoleAction createCopy(@Nonnull Guild guild)
+    {
+        Checks.notNull(guild, "Guild");
+        return guild.createRole()
+                    .setColor(getColorRaw())
+                    .setHoisted(isHoisted())
+                    .setMentionable(isMentionable())
+                    .setName(getName())
+                    .setPermissions(getPermissionsRaw())
+                    .setIcon(getIcon() == null ? null : getIcon().getEmoji()); // we can only copy the emoji as we don't have access to the Icon instance
+    }
+
     T setName(String name);
 
     T setColor(int color);

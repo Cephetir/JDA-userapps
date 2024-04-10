@@ -16,13 +16,11 @@
 
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.managers.channel.concrete.TextChannelManager;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractStandardGuildMessageChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.channel.mixin.concrete.TextChannelMixin;
@@ -71,14 +69,6 @@ public class DetachedTextChannelImpl extends AbstractStandardGuildMessageChannel
     public int getSlowmode()
     {
         return slowmode;
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<TextChannel> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with TextChannelMixin
-        throw detachedException();
     }
 
     @Nonnull

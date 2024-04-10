@@ -17,7 +17,6 @@
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelFlag;
@@ -27,7 +26,6 @@ import net.dv8tion.jda.api.entities.channel.unions.GuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.Emoji;
 import net.dv8tion.jda.api.entities.emoji.EmojiUnion;
 import net.dv8tion.jda.api.managers.channel.concrete.MediaChannelManager;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.channel.middleman.AbstractGuildChannelImpl;
 import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
@@ -84,14 +82,6 @@ public class DetachedMediaChannelImpl extends AbstractGuildChannelImpl<DetachedM
     @Override
     public List<Member> getMembers()
     {
-        throw detachedException();
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<MediaChannel> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with MediaChannelMixin
         throw detachedException();
     }
 

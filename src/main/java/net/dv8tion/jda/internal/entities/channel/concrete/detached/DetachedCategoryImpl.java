@@ -17,7 +17,6 @@
 package net.dv8tion.jda.internal.entities.channel.concrete.detached;
 
 import gnu.trove.map.TLongObjectMap;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.concrete.*;
@@ -119,14 +118,6 @@ public class DetachedCategoryImpl extends AbstractGuildChannelImpl<DetachedCateg
     @Override
     public CategoryOrderAction modifyVoiceChannelPositions()
     {
-        throw detachedException();
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<Category> createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with CategoryMixin
         throw detachedException();
     }
 

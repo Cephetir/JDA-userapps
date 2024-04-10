@@ -18,17 +18,12 @@ package net.dv8tion.jda.internal.entities.channel.concrete;
 
 import gnu.trove.map.TLongObjectMap;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.Region;
-import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.PermissionOverride;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
-import net.dv8tion.jda.api.entities.channel.concrete.Category;
 import net.dv8tion.jda.api.entities.channel.concrete.VoiceChannel;
 import net.dv8tion.jda.api.managers.channel.concrete.VoiceChannelManager;
 import net.dv8tion.jda.api.requests.Route;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.ChannelAction;
 import net.dv8tion.jda.api.utils.MiscUtil;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.entities.GuildImpl;
@@ -115,13 +110,6 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     }
 
     @Override
-    public boolean canTalk(@Nonnull Member member)
-    {
-        Checks.notNull(member, "Member");
-        return member.hasPermission(this, Permission.MESSAGE_SEND);
-    }
-
-    @Override
     public long getLatestMessageIdLong()
     {
         return latestMessageId;
@@ -132,37 +120,6 @@ public class VoiceChannelImpl extends AbstractStandardGuildChannelImpl<VoiceChan
     public List<Member> getMembers()
     {
         return Collections.unmodifiableList(new ArrayList<>(connectedMembers.valueCollection()));
-    }
-
-    @Nonnull
-    @Override
-    public ChannelAction<VoiceChannel> createCopy(@Nonnull Guild guild)
-    {
-        Checks.notNull(guild, "Guild");
-
-        ChannelAction<VoiceChannel> action = guild.createVoiceChannel(name)
-                .setBitrate(bitrate)
-                .setUserlimit(userLimit);
-
-        if (region != null)
-        {
-            action.setRegion(Region.fromKey(region));
-        }
-
-        if (guild.equals(getGuild()))
-        {
-            Category parent = getParentCategory();
-            if (parent != null)
-                action.setParent(parent);
-            for (PermissionOverride o : overrides.valueCollection())
-            {
-                if (o.isMemberOverride())
-                    action.addMemberPermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-                else
-                    action.addRolePermissionOverride(o.getIdLong(), o.getAllowedRaw(), o.getDeniedRaw());
-            }
-        }
-        return action;
     }
 
     @Nonnull

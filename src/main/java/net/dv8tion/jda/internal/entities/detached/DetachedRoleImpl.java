@@ -26,7 +26,6 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.exceptions.PermissionException;
 import net.dv8tion.jda.api.managers.RoleManager;
 import net.dv8tion.jda.api.requests.restaction.AuditableRestAction;
-import net.dv8tion.jda.api.requests.restaction.RoleAction;
 import net.dv8tion.jda.api.utils.cache.CacheFlag;
 import net.dv8tion.jda.api.utils.data.DataObject;
 import net.dv8tion.jda.internal.JDAImpl;
@@ -234,14 +233,6 @@ public class DetachedRoleImpl implements Role, RoleMixin<DetachedRoleImpl>, IDet
     public Long getGuildId()
     {
         return guild.getIdLong();
-    }
-
-    @Nonnull
-    @Override
-    public RoleAction createCopy(@Nonnull Guild guild)
-    {
-        //TODO share common code with RoleMixin
-        throw detachedException();
     }
 
     @Nonnull
