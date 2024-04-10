@@ -25,8 +25,10 @@ import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.unions.DefaultGuildChannelUnion;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
 import net.dv8tion.jda.internal.JDAImpl;
+import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
 import net.dv8tion.jda.internal.entities.detached.mixin.IDetachableEntityMixin;
 import net.dv8tion.jda.internal.entities.mixin.MemberMixin;
+import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
 import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import net.dv8tion.jda.internal.utils.EntityString;
 import net.dv8tion.jda.internal.utils.Helpers;
@@ -225,8 +227,7 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     @Override
     public EnumSet<Permission> getPermissions(@Nonnull GuildChannel channel)
     {
-        //TODO check if channel is interaction channel, if so give interaction permissions
-        throw detachedException();
+        return Permission.getPermissions(getRawInteractionPermissions(channel));
     }
 
     @Nonnull
@@ -240,8 +241,7 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     @Override
     public EnumSet<Permission> getPermissionsExplicit(@Nonnull GuildChannel channel)
     {
-        //TODO check if channel is interaction channel, if so give interaction permissions
-        throw detachedException();
+        return Permission.getPermissions(getRawInteractionPermissions(channel));
     }
 
     @Override
@@ -253,8 +253,24 @@ public class DetachedMemberImpl implements Member, MemberMixin<DetachedMemberImp
     @Override
     public boolean hasPermission(@Nonnull GuildChannel channel, @Nonnull Permission... permissions)
     {
-        //TODO check if channel is interaction channel, if so give interaction permissions
-        throw detachedException();
+        final long rawPermissions = Permission.getRaw(permissions);
+        return (getRawInteractionPermissions(channel) & rawPermissions) == rawPermissions;
+    }
+
+    private long getRawInteractionPermissions(@Nonnull GuildChannel channel)
+    {
+        if (interactionPermissions.getChannelId() == channel.getIdLong())
+            return interactionPermissions.getPermissions();
+
+        if (channel instanceof IInteractionPermissionMixin<?>)
+        {
+            final ChannelInteractionPermissions channelInteractionPermissions = ((IInteractionPermissionMixin<?>) channel).getInteractionPermissions();
+            if (channelInteractionPermissions.getMemberId() == this.getIdLong())
+                return channelInteractionPermissions.getPermissions();
+        }
+
+        throw new UnsupportedOperationException("Detached member permissions in can only be retrieved in the interaction channel, " +
+                "and channels only contain the permissions of the interaction caller");
     }
 
     @Override

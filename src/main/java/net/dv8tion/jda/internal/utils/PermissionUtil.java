@@ -23,14 +23,9 @@ import net.dv8tion.jda.api.entities.channel.concrete.TextChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
 import net.dv8tion.jda.api.entities.channel.middleman.MessageChannel;
 import net.dv8tion.jda.api.entities.emoji.RichCustomEmoji;
-import net.dv8tion.jda.internal.entities.channel.mixin.attribute.IInteractionPermissionMixin;
-import net.dv8tion.jda.internal.entities.detached.DetachedMemberImpl;
-import net.dv8tion.jda.internal.interactions.ChannelInteractionPermissions;
-import net.dv8tion.jda.internal.interactions.MemberInteractionPermissions;
 import org.apache.commons.collections4.CollectionUtils;
 
 import java.util.List;
-import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class PermissionUtil
@@ -273,7 +268,7 @@ public class PermissionUtil
      * @return True -
      *         if the {@link net.dv8tion.jda.api.entities.Member Member} effectively has the specified {@link net.dv8tion.jda.api.Permission Permissions}.
      */
-    public static boolean checkPermission(GuildChannel channel, Member member, Permission... permissions)
+    public static boolean checkPermission(IPermissionContainer channel, Member member, Permission... permissions)
     {
         Checks.notNull(channel, "Channel");
         Checks.notNull(member, "Member");
@@ -308,8 +303,8 @@ public class PermissionUtil
         Checks.notNull(member, "Member");
 
         if (member.isDetached())
-            throw new IllegalStateException("Cannot get the effective permissions of a member in an unknown guild without a channel. " +
-                    "Use the overload with the interaction's channel instead.");
+            throw new IllegalStateException("Cannot get the effective permissions of a detached member without a channel. " +
+                    "Instead, please use the Member methods while supplying a GuildChannel");
 
         if (member.isOwner())
             return Permission.ALL_PERMISSIONS;
@@ -354,9 +349,9 @@ public class PermissionUtil
         Checks.check(channel.getGuild().equals(member.getGuild()), "Provided channel and provided member are not of the same guild!");
 
         if (member.isDetached())
-            return getInteractionPermissions(channel, member);
+            throw new IllegalStateException("Cannot get the effective permissions of a detached member. " +
+                    "Instead, please use the Member methods while supplying a GuildChannel");
 
-        IPermissionContainer permsChannel = channel.getPermissionContainer();
         if (member.isOwner())
         {
             // Owner effectively has all permissions
@@ -369,15 +364,15 @@ public class PermissionUtil
             return Permission.ALL_PERMISSIONS;
 
         // MANAGE_CHANNEL allows to delete channels within a category (this is undocumented behavior)
-        if (permsChannel instanceof ICategorizableChannel) {
-            ICategorizableChannel categorizableChannel = (ICategorizableChannel) permsChannel;
+        if (channel instanceof ICategorizableChannel) {
+            ICategorizableChannel categorizableChannel = (ICategorizableChannel) channel;
             if (categorizableChannel.getParentCategory() != null && checkPermission(categorizableChannel.getParentCategory(), member, Permission.MANAGE_CHANNEL))
                 permission |= Permission.MANAGE_CHANNEL.getRawValue();
         }
 
         AtomicLong allow = new AtomicLong(0);
         AtomicLong deny = new AtomicLong(0);
-        getExplicitOverrides(permsChannel, member, allow, deny);
+        getExplicitOverrides(channel, member, allow, deny);
         permission = apply(permission, allow.get(), deny.get());
         final long viewChannel = Permission.VIEW_CHANNEL.getRawValue();
         final long connectChannel = Permission.VOICE_CONNECT.getRawValue();
@@ -385,7 +380,7 @@ public class PermissionUtil
         //When the permission to view the channel or to connect to the channel is not applied it is not granted
         // This means that we have no access to this channel at all
         // See https://github.com/discord/discord-api-docs/issues/1522
-        final boolean hasConnect = !permsChannel.getType().isAudio() || isApplied(permission, connectChannel);
+        final boolean hasConnect = !channel.getType().isAudio() || isApplied(permission, connectChannel);
         final boolean hasAccess = isApplied(permission, viewChannel) && hasConnect;
 
         // See https://discord.com/developers/docs/topics/permissions#permissions-for-timed-out-members
@@ -453,8 +448,8 @@ public class PermissionUtil
         Checks.notNull(member, "Member");
 
         if (member.isDetached())
-            throw new IllegalStateException("Cannot get the explicit permissions of a member in an unknown guild without a channel. " +
-                    "Use the overload with the interaction's channel instead.");
+            throw new IllegalStateException("Cannot get the explicit permissions of a detached member without a channel. " +
+                    "Instead, please use the Member methods while supplying a GuildChannel");
 
         final Guild guild = member.getGuild();
         long permission = guild.getPublicRole().getPermissionsRaw();
@@ -530,7 +525,8 @@ public class PermissionUtil
         checkGuild(channel.getGuild(), member.getGuild(), "Member");
 
         if (member.isDetached())
-            return getInteractionPermissions(channel, member);
+            throw new IllegalStateException("Cannot get the explicit permissions of a detached member. " +
+                    "Instead, please use the Member methods while supplying a GuildChannel");
 
         long permission = includeRoles ? getExplicitPermission(member) : 0L;
 
@@ -541,21 +537,6 @@ public class PermissionUtil
         getExplicitOverrides(channel, member, allow, deny);
 
         return apply(permission, allow.get(), deny.get());
-    }
-
-    private static long getInteractionPermissions(GuildChannel channel, Member member)
-    {
-        final MemberInteractionPermissions memberInteractionPermissions = ((DetachedMemberImpl) member).getInteractionPermissions();
-        if (memberInteractionPermissions.getChannelId() == channel.getIdLong())
-            return memberInteractionPermissions.getPermissions();
-
-        //TODO apparently this does not include implicit permissions, whatever that means
-        final ChannelInteractionPermissions channelInteractionPermissions = ((IInteractionPermissionMixin<?>) channel).getInteractionPermissions();
-        if (channelInteractionPermissions.getMemberId() == member.getIdLong())
-            return channelInteractionPermissions.getPermissions();
-
-        throw new UnsupportedOperationException("Member permissions can only be retrieved in the interaction channel, " +
-                "and channels only contain the permissions of the interaction caller");
     }
 
     /**
@@ -618,12 +599,12 @@ public class PermissionUtil
 
         // Can't know exactly what the role's permissions in that channel are, since we don't have the overrides.
         if (role.isDetached())
-            throw new IllegalStateException("Cannot get the explicit permissions of a role in an unknown guild");
+            throw new IllegalStateException("Cannot get the explicit permissions of a detached role");
 
         IPermissionContainer permsChannel = channel.getPermissionContainer();
 
         final Guild guild = role.getGuild();
-        checkGuild(channel.getGuild(), role.getGuild(), "Role");
+        checkGuild(channel.getGuild(), guild, "Role");
 
         long permission = includeRoles ? role.getPermissionsRaw() | guild.getPublicRole().getPermissionsRaw() : 0;
         PermissionOverride override = permsChannel.getPermissionOverride(guild.getPublicRole());
@@ -701,7 +682,7 @@ public class PermissionUtil
 
     private static void checkGuild(Guild o1, Guild o2, String name)
     {
-        Checks.check(Objects.equals(o1, o2),
+        Checks.check(o1.equals(o2),
             "Specified %s is not in the same guild! (%s / %s)", name, o1, o2);
     }
 }
