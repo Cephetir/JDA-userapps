@@ -85,7 +85,7 @@ public class InteractionImpl implements Interaction
         this.integrationOwners = new IntegrationOwnersImpl(data.optObject("authorizing_integration_owners").orElseGet(DataObject::empty));
 
         DataObject channelJson = data.getObject("channel");
-        if (guild != null)
+        if (guild instanceof GuildImpl)
         {
             member = jda.getEntityBuilder().createMember((GuildImpl) guild, data.getObject("member"));
             jda.getEntityBuilder().updateMemberCache((MemberImpl) member);
