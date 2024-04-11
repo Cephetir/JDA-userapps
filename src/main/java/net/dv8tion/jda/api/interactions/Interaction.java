@@ -18,10 +18,7 @@ package net.dv8tion.jda.api.interactions;
 
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.Permission;
-import net.dv8tion.jda.api.entities.Guild;
-import net.dv8tion.jda.api.entities.ISnowflake;
-import net.dv8tion.jda.api.entities.Member;
-import net.dv8tion.jda.api.entities.User;
+import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.entities.channel.Channel;
 import net.dv8tion.jda.api.entities.channel.ChannelType;
 import net.dv8tion.jda.api.entities.channel.middleman.GuildChannel;
@@ -102,6 +99,19 @@ public interface Interaction extends ISnowflake
      */
     @Nullable
     Guild getGuild();
+
+    /**
+     * Whether this interaction happened in a guild the bot is in.
+     *
+     * @return {@code true}, if this interaction happened in a guild the bot is in
+     */
+    default boolean hasFullGuild()
+    {
+        final Guild guild = getGuild();
+        if (guild == null)
+            return false;
+        return !guild.isDetached();
+    }
 
     /**
      * Whether this interaction came from a {@link Guild}.
